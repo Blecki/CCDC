@@ -18,7 +18,7 @@ namespace MonoCardCrawl
         [STAThread]
         static void Main()
         {
-            using (var game = new Game1())
+            using (var game = new Gem.Main(""))
                 game.Run();
         }
     }
