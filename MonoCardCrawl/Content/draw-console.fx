@@ -67,14 +67,14 @@ technique DrawColor
 {
     pass Pass1
     {
-		AlphaBlendEnable = false;
-		BlendOp = Add;
-		SrcBlend = One;
-		DestBlend = InvSrcAlpha;
-		//ZEnable = false;
-		//ZWriteEnable = true;
-		//ZFunc = LessEqual;
-		CullMode = None;
+		//AlphaBlendEnable = false;
+		//BlendOp = Add;
+		//SrcBlend = One;
+		//DestBlend = InvSrcAlpha;
+		////ZEnable = false;
+		////ZWriteEnable = true;
+		////ZFunc = LessEqual;
+		//CullMode = None;
 		
         VertexShader = compile vs_4_0 VertexShaderFunction();
         PixelShader = compile ps_4_0 PSColor();

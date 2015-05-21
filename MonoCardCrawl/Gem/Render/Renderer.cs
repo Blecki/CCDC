@@ -12,14 +12,10 @@ namespace Gem.Render
     public class Renderer
     {
         public ICamera Camera = new Cameras.OrbitCamera(Vector3.Zero, Vector3.UnitX, Vector3.UnitZ, 10);
-        //BasicEffect drawEffect;
 		Effect Effect;
-        //BasicEffect drawIDEffect;
-        //AlphaTestEffect drawSpriteEffect;
         ImmediateModeDebug debug;
         GraphicsDevice device;
 
-        RenderTarget2D mousePickTarget;
         RenderContext renderContext = new RenderContext();
         ImmediateMode2d immediate2d = null;
 
@@ -37,13 +33,9 @@ namespace Gem.Render
             debug = new ImmediateModeDebug(device);
 
 			Effect = content.Load<Effect>("draw");
-			//Effect.Parameters["PointLight1Position"].SetValue(new Vector4(3,3,3,1));
-			//Effect.Parameters["PointLight1Color"].SetValue(new Vector4(1, 1, 1, 1));
-			//Effect.Parameters["AttenuationMap"].SetValue(content.Load<Texture2D>("attenuation"));
 
             Camera.Viewport = device.Viewport;
 
-            mousePickTarget = new RenderTarget2D(device, 1, 1, false, SurfaceFormat.Color, DepthFormat.Depth24);
 
             immediate2d = new ImmediateMode2d(device);
         }
@@ -66,53 +58,6 @@ namespace Gem.Render
             return mouseRay;
         }
 
-        public IRenderable MousePick(Vector2 mouseCoordinates, IEnumerable<IRenderable> renderables)
-        {
-            device.SetRenderTarget(mousePickTarget);
-            device.Clear(ClearOptions.Target, Vector4.Zero, 0xFFFFFF, 0);
-            device.BlendState = BlendState.Opaque;
-
-			Effect.Parameters["World"].SetValue(Matrix.Identity);
-			Effect.Parameters["WorldInverseTranspose"].SetValue(Matrix.Transpose(Matrix.Invert(Matrix.Identity)));
-			Effect.Parameters["View"].SetValue(Camera.View);
-			Effect.Parameters["Projection"].SetValue(Camera.GetSinglePixelProjection(mouseCoordinates));
-
-            renderContext.BeginScene(Effect, 1, device);
-			renderContext.ProtectDiffuseColor = true;
-
-            var index = 1;
-            foreach (var renderable in renderables)
-            {
-				if (renderable != null)
-				{
-					var idBytes = BitConverter.GetBytes(index);
-					Effect.Parameters["DiffuseColor"].SetValue(
-						new Vector4(idBytes[0] / 255.0f, idBytes[1] / 255.0f, idBytes[2] / 255.0f, 1.0f));
-
-					renderable.DrawEx(renderContext, RenderMode.MousePick);
-				}
-                index += 1;
-            }
-
-			renderContext.ProtectDiffuseColor = false;
-            device.SetRenderTarget(null);
-            var data = new Color[1];
-            mousePickTarget.GetData(data);
-            var result = data[0].PackedValue & 0x00FFFFFF; //Mask off the alpha bits.
-
-			if (result != 0)
-			{
-				try
-				{
-					return renderables.ElementAt((int)(result - 1));
-				}
-				catch (Exception e)
-				{ }
-			}
-
-            return null;
-        }
-
         public enum DrawModeFlag
         {
             Normal,
@@ -121,27 +66,22 @@ namespace Gem.Render
 
         public void Draw(IEnumerable<IRenderable> renderables, DrawModeFlag modeFlag = DrawModeFlag.Normal)
         {
-			device.RasterizerState = RasterizerState.CullCounterClockwise;
-            //device.SetRenderTarget(null);
-            device.Clear(ClearOptions.DepthBuffer, Color.Black, 1.0f, 0);
-            device.BlendState = BlendState.AlphaBlend;
-            device.DepthStencilState = DepthStencilState.Default;
-			device.SamplerStates[0] = SamplerState.PointClamp;
+            device.Clear(ClearOptions.Target, Color.CornflowerBlue, 0xFFFFFF, 0);           
 
 			Effect.Parameters["World"].SetValue(Matrix.Identity);
 			Effect.Parameters["WorldInverseTranspose"].SetValue(Matrix.Transpose(Matrix.Invert(Matrix.Identity)));
 			Effect.Parameters["View"].SetValue(Camera.View);
 			Effect.Parameters["Projection"].SetValue(Camera.Projection);
-			//Effect.Parameters["PointLight1Position"].SetValue(new Vector4(3, 3, 3, 1));
-			//Effect.Parameters["PointLight1Color"].SetValue(new Vector4(1, 1, 1, 1));
+			
+            renderContext.BeginScene(Effect, 0, device);
 
             renderContext.Camera = Camera;
-            renderContext.BeginScene(Effect, 0, device);
+            renderContext.Color = Vector3.One;
 
             if (modeFlag == DrawModeFlag.Normal)
                 foreach (var node in renderables)
                     if (node != null) node.DrawEx(renderContext, RenderMode.Normal);
-            
+
             debug.Begin(Matrix.Identity, Camera.View, Camera.Projection);
             foreach (var line in debugLines)
                 debug.Line(line.Item1, line.Item2);

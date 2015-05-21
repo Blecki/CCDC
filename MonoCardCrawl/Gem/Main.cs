@@ -16,6 +16,7 @@ namespace Gem
         private IScreen nextGame = null;
         public IScreen Game { get { return activeGame; } set { nextGame = value; } }
 		public EpisodeContentManager EpisodeContent;
+        public ScriptBuilder ScriptBuilder;
 
         private List<Console.ConsoleWindow> Consoles = new List<Console.ConsoleWindow>();
         
@@ -66,6 +67,7 @@ namespace Gem
             IsFixedTimeStep = true;
 
             Input = new Input(Window.Handle);
+            Input.AddAxis("MAIN", new MouseAxisBinding());
 
             this.startupCommand = startupCommand;
         }
@@ -101,6 +103,13 @@ namespace Gem
         {
 			EpisodeContent = new EpisodeContentManager(Content.ServiceProvider, "");
 			var mainConsole = AllocateConsole(GraphicsDevice.Viewport.Bounds);
+            ScriptBuilder = new Gem.ScriptBuilder(mainConsole.WriteLine);
+            mainConsole.ConsoleCommandHandler += s =>
+            {
+                var action = ScriptBuilder.CompileScript(s);
+                if (action != null) action();
+            };
+            mainConsole.Resize(GraphicsDevice.Viewport.Bounds, 2);
             
             Immediate2d = new Gem.Render.ImmediateMode2d(GraphicsDevice);
 
@@ -164,10 +173,12 @@ namespace Gem
                 foreach (var consoleWindow in Consoles)
                     consoleWindow.PrepareImage();
 
+            GraphicsDevice.DepthStencilState = DepthStencilState.Default;
             if (activeGame != null) activeGame.Draw((float)gameTime.ElapsedGameTime.TotalSeconds);
 
             if (ConsoleOpen)
             {
+                GraphicsDevice.DepthStencilState = DepthStencilState.None;
                 Immediate2d.Camera.focus = new Vector2(Immediate2d.Camera.Viewport.Width / 2,
                     Immediate2d.Camera.Viewport.Height / 2);
                 Immediate2d.BeginScene(null, false);

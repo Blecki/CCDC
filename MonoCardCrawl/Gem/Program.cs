@@ -19,7 +19,10 @@ namespace MonoCardCrawl
         static void Main()
         {
             using (var game = new Gem.Main(""))
+            {
+                game.Game = new ModelScreen();
                 game.Run();
+            }
         }
     }
 #endif

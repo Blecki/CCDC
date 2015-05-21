@@ -108,5 +108,7 @@ namespace Gem.Render.Cameras
             var right = Vector3.Cross(Forward, Up);
             Up = Vector3.Cross(right, Forward);
         }
+
+        
     }
 }

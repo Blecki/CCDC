@@ -14,6 +14,21 @@
     <MonoGamePlatform>Windows</MonoGamePlatform>
     <MonoGameContentBuilderExe>
     </MonoGameContentBuilderExe>
+    <PublishUrl>publish\</PublishUrl>
+    <Install>true</Install>
+    <InstallFrom>Disk</InstallFrom>
+    <UpdateEnabled>false</UpdateEnabled>
+    <UpdateMode>Foreground</UpdateMode>
+    <UpdateInterval>7</UpdateInterval>
+    <UpdateIntervalUnits>Days</UpdateIntervalUnits>
+    <UpdatePeriodically>false</UpdatePeriodically>
+    <UpdateRequired>false</UpdateRequired>
+    <MapFileExtensions>true</MapFileExtensions>
+    <ApplicationRevision>0</ApplicationRevision>
+    <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
+    <IsWebBootstrapper>false</IsWebBootstrapper>
+    <UseApplicationTrust>false</UseApplicationTrust>
+    <BootstrapperEnabled>true</BootstrapperEnabled>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -24,6 +39,7 @@
     <DefineConstants>DEBUG;TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -38,84 +54,99 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
-    <Compile Include="Common\Euler.cs" />
-    <Compile Include="Common\Grid.cs" />
-    <Compile Include="Common\MultiDictionary.cs" />
-    <Compile Include="Common\Console\ConsoleDisplay.cs" />
-    <Compile Include="Common\Console\ConsoleInputHandler.cs" />
-    <Compile Include="Common\Console\ConsoleVertex.cs" />
-    <Compile Include="Common\Console\ConsoleWindow.cs" />
-    <Compile Include="Common\Console\DynamicConsoleBuffer.cs" />
-    <Compile Include="Common\ScriptBuilder.cs" />
-    <Compile Include="EmptyScreen.cs" />
-    <Compile Include="Common\EpisodeContentManager.cs" />
-    <Compile Include="Common\AddMany.cs" />
-    <Compile Include="Common\Upsert.cs" />
-    <Compile Include="Geo\CompiledModel.cs" />
-    <Compile Include="Geo\Gen\AlignToSpline.cs" />
-    <Compile Include="Geo\Gen\Basics.cs" />
-    <Compile Include="Geo\Gen\CreateCube.cs" />
-    <Compile Include="Geo\Gen\CreateLine.cs" />
-    <Compile Include="Geo\Gen\CreatePrism.cs" />
-    <Compile Include="Geo\Gen\CreateTexturedFacetedCube.cs" />
-    <Compile Include="Geo\Gen\CreateUnitPolygon.cs" />
-    <Compile Include="Geo\Gen\ExtrudeShape.cs" />
-    <Compile Include="Geo\Gen\Facet.cs" />
-    <Compile Include="Geo\Gen\FitToBox.cs" />
-    <Compile Include="Geo\Gen\Icosahedron.cs" />
-    <Compile Include="Geo\Gen\MorphToSpline.cs" />
-    <Compile Include="Geo\Gen\Patch.cs" />
-    <Compile Include="Geo\Gen\ProjectTexture.cs" />
-    <Compile Include="Geo\Gen\ProjectTextureCube.cs" />
-    <Compile Include="Geo\Gen\Subdivide.cs" />
-    <Compile Include="Geo\Gen\WeldCopy.cs" />
-    <Compile Include="Geo\Mesh.cs" />
-    <Compile Include="Gui\BitmapFont.cs" />
-    <Compile Include="Gui\BorderLayout.cs" />
-    <Compile Include="Gui\FlowLayout.cs" />
-    <Compile Include="Gui\GridLayout.cs" />
-    <Compile Include="Gui\GuiDriver.cs" />
-    <Compile Include="Gui\GuiRenderable.cs" />
-    <Compile Include="Gui\Layout.cs" />
-    <Compile Include="Gui\TextFieldLogic.cs" />
-    <Compile Include="Gui\UIItem.cs" />
-    <Compile Include="Gui\VirtualLayout.cs" />
-    <Compile Include="Common\Input.cs" />
-    <Compile Include="IScreen.cs" />
-    <Compile Include="Common\KeyboardMessageFilter.cs" />
-    <Compile Include="MainKeyboardHandler.cs" />
-    <Compile Include="Main.cs" />
-    <Compile Include="Common\AABB.cs" />
-    <Compile Include="Common\Angle.cs" />
-    <Compile Include="Common\Bezier.cs" />
-    <Compile Include="Common\Circle.cs" />
-    <Compile Include="Common\Intersection.cs" />
-    <Compile Include="Common\IntersectionPointInPoly.cs" />
-    <Compile Include="Common\OBB.cs" />
-    <Compile Include="Common\Spline.cs" />
-    <Compile Include="Common\Utility.cs" />
-    <Compile Include="Common\Vector.cs" />
-    <Compile Include="Common\Pathfinding.cs" />
-    <Compile Include="Program.cs" />
+    <Compile Include="Game\Cell.cs" />
+    <Compile Include="Game\CellGrid.cs" />
+    <Compile Include="Gem\Common\Euler.cs" />
+    <Compile Include="Gem\Common\Grid.cs" />
+    <Compile Include="Gem\Common\MultiDictionary.cs" />
+    <Compile Include="Gem\Common\Console\ConsoleDisplay.cs" />
+    <Compile Include="Gem\Common\Console\ConsoleInputHandler.cs" />
+    <Compile Include="Gem\Common\Console\ConsoleVertex.cs" />
+    <Compile Include="Gem\Common\Console\ConsoleWindow.cs" />
+    <Compile Include="Gem\Common\Console\DynamicConsoleBuffer.cs" />
+    <Compile Include="Gem\Common\ScriptBuilder.cs" />
+    <Compile Include="Gem\Render\DebuggingContext.cs" />
+    <Compile Include="Game\GameRenderer.cs" />
+    <Compile Include="Gem\Geo\EdgeMesh\EdgeMesh.cs" />
+    <Compile Include="Gem\Geo\EdgeMesh\RayIntersection.cs" />
+    <Compile Include="Gem\Geo\EdgeMesh\SimplifyEdgeMesh.cs" />
+    <Compile Include="Gem\Geo\EdgeMesh\TangentTrace.cs" />
+    <Compile Include="Game\PathFindingResult.cs" />
+    <Compile Include="Game\ScriptBase.cs" />
+    <Compile Include="Game\ModelScreen.cs" />
+    <Compile Include="Game\Tile.cs" />
+    <Compile Include="Gem\Common\Grid3D.cs" />
+    <Compile Include="Game\TileGridNode.cs" />
+    <Compile Include="Gem\EmptyScreen.cs" />
+    <Compile Include="Gem\Common\EpisodeContentManager.cs" />
+    <Compile Include="Gem\Common\AddMany.cs" />
+    <Compile Include="Gem\Common\Upsert.cs" />
+    <Compile Include="Gem\Geo\CompiledModel.cs" />
+    <Compile Include="Gem\Geo\Gen\AlignToSpline.cs" />
+    <Compile Include="Gem\Geo\Gen\Basics.cs" />
+    <Compile Include="Gem\Geo\Gen\CreateCube.cs" />
+    <Compile Include="Gem\Geo\Gen\CreateLine.cs" />
+    <Compile Include="Gem\Geo\Gen\CreatePrism.cs" />
+    <Compile Include="Gem\Geo\Gen\CreateTexturedFacetedCube.cs" />
+    <Compile Include="Gem\Geo\Gen\CreateUnitPolygon.cs" />
+    <Compile Include="Gem\Geo\Gen\ExtrudeShape.cs" />
+    <Compile Include="Gem\Geo\Gen\Facet.cs" />
+    <Compile Include="Gem\Geo\Gen\FitToBox.cs" />
+    <Compile Include="Gem\Geo\Gen\Icosahedron.cs" />
+    <Compile Include="Gem\Geo\Gen\MorphToSpline.cs" />
+    <Compile Include="Gem\Geo\Gen\Patch.cs" />
+    <Compile Include="Gem\Geo\Gen\ProjectTexture.cs" />
+    <Compile Include="Gem\Geo\Gen\ProjectTextureCube.cs" />
+    <Compile Include="Gem\Geo\Gen\Subdivide.cs" />
+    <Compile Include="Gem\Geo\Gen\WeldCopy.cs" />
+    <Compile Include="Gem\Geo\Mesh.cs" />
+    <Compile Include="Gem\Gui\BitmapFont.cs" />
+    <Compile Include="Gem\Gui\BorderLayout.cs" />
+    <Compile Include="Gem\Gui\FlowLayout.cs" />
+    <Compile Include="Gem\Gui\GridLayout.cs" />
+    <Compile Include="Gem\Gui\GuiDriver.cs" />
+    <Compile Include="Gem\Gui\GuiRenderable.cs" />
+    <Compile Include="Gem\Gui\Layout.cs" />
+    <Compile Include="Gem\Gui\TextFieldLogic.cs" />
+    <Compile Include="Gem\Gui\UIItem.cs" />
+    <Compile Include="Gem\Gui\VirtualLayout.cs" />
+    <Compile Include="Gem\Common\Input.cs" />
+    <Compile Include="Gem\IScreen.cs" />
+    <Compile Include="Gem\Common\KeyboardMessageFilter.cs" />
+    <Compile Include="Gem\MainKeyboardHandler.cs" />
+    <Compile Include="Gem\Main.cs" />
+    <Compile Include="Gem\Common\AABB.cs" />
+    <Compile Include="Gem\Common\Angle.cs" />
+    <Compile Include="Gem\Common\Bezier.cs" />
+    <Compile Include="Gem\Common\Circle.cs" />
+    <Compile Include="Gem\Common\Intersection.cs" />
+    <Compile Include="Gem\Common\IntersectionPointInPoly.cs" />
+    <Compile Include="Gem\Common\OBB.cs" />
+    <Compile Include="Gem\Common\Spline.cs" />
+    <Compile Include="Gem\Common\Utility.cs" />
+    <Compile Include="Gem\Common\Vector.cs" />
+    <Compile Include="Gem\Common\Pathfinding.cs" />
+    <Compile Include="Gem\Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Render\FreeCamera.cs" />
-    <Compile Include="Render\OrbitCamera.cs" />
-    <Compile Include="Render\OrthographicCamera.cs" />
-    <Compile Include="Render\ZPlaneOrbitCamera.cs" />
-    <Compile Include="Render\ICamera.cs" />
-    <Compile Include="Render\ImmediateMode2d.cs" />
-    <Compile Include="Render\ImmediateModeDebug.cs" />
-    <Compile Include="Render\IRenderable.cs" />
-    <Compile Include="Render\MatrixStack.cs" />
-    <Compile Include="Render\ObjectSet.cs" />
-    <Compile Include="Render\RenderContext.cs" />
-    <Compile Include="Render\Renderer.cs" />
-    <Compile Include="Render\BranchNode.cs" />
-    <Compile Include="Render\GuiNode.cs" />
-    <Compile Include="Render\ISceneNode.cs" />
-    <Compile Include="Render\MeshNode.cs" />
-    <Compile Include="Render\Root.cs" />
-    <Compile Include="Render\SpriteNode.cs" />
+    <Compile Include="Gem\Render\FreeCamera.cs" />
+    <Compile Include="Gem\Render\OrbitCamera.cs" />
+    <Compile Include="Gem\Render\OrthographicCamera.cs" />
+    <Compile Include="Gem\Render\ZPlaneOrbitCamera.cs" />
+    <Compile Include="Gem\Render\ICamera.cs" />
+    <Compile Include="Gem\Render\ImmediateMode2d.cs" />
+    <Compile Include="Gem\Render\ImmediateModeDebug.cs" />
+    <Compile Include="Gem\Render\IRenderable.cs" />
+    <Compile Include="Gem\Render\MatrixStack.cs" />
+    <Compile Include="Gem\Render\ObjectSet.cs" />
+    <Compile Include="Gem\Render\RenderContext.cs" />
+    <Compile Include="Gem\Render\Renderer.cs" />
+    <Compile Include="Gem\Render\BranchNode.cs" />
+    <Compile Include="Gem\Render\GuiNode.cs" />
+    <Compile Include="Gem\Render\ISceneNode.cs" />
+    <Compile Include="Gem\Render\MeshNode.cs" />
+    <Compile Include="Gem\Render\Root.cs" />
+    <Compile Include="Gem\Render\SpriteNode.cs" />
+    <Compile Include="Game\World.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
@@ -131,7 +162,28 @@
   <ItemGroup>
     <MonoGameContentReference Include="Content\Content.mgcb" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <BootstrapperPackage Include=".NETFramework,Version=v4.0">
+      <Visible>False</Visible>
+      <ProductName>Microsoft .NET Framework 4 %28x86 and x64%29</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Client.3.5">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1 Client Profile</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Net.Framework.3.5.SP1">
+      <Visible>False</Visible>
+      <ProductName>.NET Framework 3.5 SP1</ProductName>
+      <Install>false</Install>
+    </BootstrapperPackage>
+    <BootstrapperPackage Include="Microsoft.Windows.Installer.4.5">
+      <Visible>False</Visible>
+      <ProductName>Windows Installer 4.5</ProductName>
+      <Install>true</Install>
+    </BootstrapperPackage>
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -36,7 +36,7 @@ namespace Gem.Render.SceneGraph
             if (Texture != null) context.Texture = Texture;
             else context.Texture = context.White;
             context.World = worldTransformation;
-            //context.ApplyChanges();
+            context.ApplyChanges();
             context.DrawSprite(Mesh);
 
             if (Mesh.lineIndicies != null)

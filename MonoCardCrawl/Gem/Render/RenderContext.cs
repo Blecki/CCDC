@@ -30,6 +30,8 @@ namespace Gem.Render
                 White = new Texture2D(device, 1, 1, false, SurfaceFormat.Color);
                 White.SetData(new Color[] { new Color(255, 255, 255, 255) });
             }
+
+            ApplyChanges();
         }
 
         public void ApplyChanges()
@@ -51,7 +53,7 @@ namespace Gem.Render
         {
             set
             {
-				Effect.Parameters["Texture"].SetValue(value);
+			    Effect.Parameters["Texture"].SetValue(value);
             }
         }
 

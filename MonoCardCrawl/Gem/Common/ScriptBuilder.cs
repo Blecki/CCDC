@@ -33,6 +33,13 @@ using System.Linq;
             PrepareCompilerParameters();
         }
 
+        public void DeriveScriptsFrom(String SuperClass)
+        {
+            TypeHeader = @"class CSharpScript : " + SuperClass + @"{
+    public static void Execute() {
+";
+        }
+
         private void PrepareCompilerParameters()
         {
             if (CompilerParameters != null) return;
@@ -66,10 +73,13 @@ using System.Linq;
             var compilationResults = CodeProvider.CompileAssemblyFromSource(CompilerParameters, FileContents);
 
             if (compilationResults.Errors.Count > 0 && ReportErrors != null)
+            {
                 foreach (var error in compilationResults.Errors)
                     ReportErrors((error as CompilerError).ErrorText);
-
-            return compilationResults.CompiledAssembly;
+                return null;
+            }
+            else
+                return compilationResults.CompiledAssembly;
         }
 
         /// <summary>

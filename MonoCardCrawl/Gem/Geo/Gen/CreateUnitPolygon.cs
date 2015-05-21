@@ -56,5 +56,29 @@ namespace Gem.Geo
             result.indicies = new short[] { 0, 2, 1, 3, 2, 0 };
             return result;
         }
+
+        public static Mesh CreateSpriteQuad()
+        {
+            var result = new Mesh();
+            result.verticies = new VertexPositionNormalTexture[4];
+
+            result.verticies[0].Position = new Vector3(0.0f, 0.0f, 0);
+            result.verticies[1].Position = new Vector3(1.0f, 0.0f, 0);
+            result.verticies[2].Position = new Vector3(1.0f, 1.0f, 0);
+            result.verticies[3].Position = new Vector3(0.0f, 1.0f, 0);
+
+            result.verticies[0].TextureCoordinate = new Vector2(0.0f, 1.0f);
+            result.verticies[1].TextureCoordinate = new Vector2(1.0f, 1.0f);
+            result.verticies[2].TextureCoordinate = new Vector2(1.0f, 0.0f);
+            result.verticies[3].TextureCoordinate = new Vector2(0.0f, 0.0f);
+
+            for (int i = 0; i < 4; ++i)
+            {
+                result.verticies[i].Normal = -Vector3.UnitZ;
+            }
+
+            result.indicies = new short[] { 0, 2, 1, 3, 2, 0 };
+            return result;
+        }
     }
 }
