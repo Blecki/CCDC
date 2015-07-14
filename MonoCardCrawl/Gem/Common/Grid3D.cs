@@ -76,9 +76,9 @@ namespace Gem.Common
                 for (int y = 0; y < nh; ++y)
                     for (int z = 0; z < nd; ++z)
                         if (check(x, y, z))
-                            ntiles[(z * nh * nd) + (y * nw) + x] = this[x, y, z];
+                            ntiles[(z * nh * nw) + (y * nw) + x] = this[x, y, z];
                         else
-                            ntiles[(z * nh * nd) + (y * nw) + x] = new T();
+                            ntiles[(z * nh * nw) + (y * nw) + x] = new T();
 
             this.width = nw;
             this.height = nh;

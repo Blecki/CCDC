@@ -167,10 +167,10 @@ namespace Gem.Geo.Ico
         public Mesh GenerateMesh(float Radius)
         {
             var r = new Mesh();
-            r.verticies = new VertexPositionNormalTexture[Verticies.Count];
+            r.verticies = new Vertex[Verticies.Count];
 
             for (int i = 0; i < Verticies.Count; ++i)
-                r.verticies[i] = new VertexPositionNormalTexture(Verticies[i] * Radius, Vector3.Normalize(Verticies[i]), Vector2.Zero);
+                r.verticies[i] = new Vertex { Position = Verticies[i] * Radius, Normal = Vector3.Normalize(Verticies[i]), TextureCoordinate = Vector2.Zero };
 
             r.indicies = new short[Faces.Count * 3];
             int index = 0;

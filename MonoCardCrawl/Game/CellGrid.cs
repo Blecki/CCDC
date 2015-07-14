@@ -20,29 +20,9 @@ namespace MonoCardCrawl
             else return CellProxy;
         }
 
-        public Gem.Geo.EdgeMesh GenerateNavigationMesh()
+        public void ForEachTile(Action<Cell,int,int,int> Callback)
         {
-            var meshes = new List<Gem.Geo.Mesh>();
-            this.forRect(0, 0, 0, width, height, depth, (c, x, y, z) =>
-                {
-                    if (c.Solid && c.Tile != null && !CellAt(x, y, z + 1).Solid)
-                    {
-                        var mesh = c.Tile.NavigationMesh;
-                        if (mesh != null)
-                        {
-                            mesh = Gem.Geo.Gen.Copy(mesh);
-                            Gem.Geo.Gen.Transform(mesh, Matrix.CreateTranslation(x + 0.5f, y + 0.5f, z));
-                            meshes.Add(mesh);
-                        }
-                    }
-                });
-
-            var rawNavMesh = Gem.Geo.Gen.Merge(meshes.ToArray());
-            rawNavMesh = Gem.Geo.Gen.WeldCopy(rawNavMesh);
-
-            var navMesh = new Gem.Geo.EdgeMesh(rawNavMesh);
-
-            return navMesh;
+            this.forRect(0, 0, 0, width, height, depth, Callback);
         }
     }
 }

@@ -17,7 +17,7 @@ namespace Gem.Geo
         public static Mesh CreateUnitPolygon(int sides, Vector3 radial, Vector3 axis)
         {
             var result = new Mesh();
-            result.verticies = new VertexPositionNormalTexture[sides + 1];
+            result.verticies = new Vertex[sides + 1];
             result.verticies[0].Position = new Vector3(0, 0, 0);
             for (int i = 0; i < sides; ++i)
             {
@@ -39,7 +39,7 @@ namespace Gem.Geo
         public static Mesh CreateQuad()
         {
             var result = new Mesh();
-            result.verticies = new VertexPositionNormalTexture[4];
+            result.verticies = new Vertex[4];
 
             result.verticies[0].Position = new Vector3(-0.5f, -0.5f, 0);
             result.verticies[1].Position = new Vector3(0.5f, -0.5f, 0);
@@ -60,7 +60,7 @@ namespace Gem.Geo
         public static Mesh CreateSpriteQuad()
         {
             var result = new Mesh();
-            result.verticies = new VertexPositionNormalTexture[4];
+            result.verticies = new Vertex[4];
 
             result.verticies[0].Position = new Vector3(0.0f, 0.0f, 0);
             result.verticies[1].Position = new Vector3(1.0f, 0.0f, 0);

@@ -53,9 +53,9 @@ namespace Gem.Geo
             return r;
         }
 
-        private VertexPositionNormalTexture[] CreatePatchVertices(Vector3[] patch, int tessellation, bool isMirrored)
+        private Vertex[] CreatePatchVertices(Vector3[] patch, int tessellation, bool isMirrored)
         {
-            var r = new List<VertexPositionNormalTexture>();
+            var r = new List<Vertex>();
             Debug.Assert(patch.Length == 16);
             for (int i = 0; i <= tessellation; i++)
             {
@@ -109,7 +109,7 @@ namespace Gem.Geo
                         //    normal = Vector3.Down;
                     }
                     // Create the vertex.
-                    r.Add(new VertexPositionNormalTexture() { Position = position, Normal = normal });
+                    r.Add(new Vertex() { Position = position, Normal = normal });
                 }
             }
 

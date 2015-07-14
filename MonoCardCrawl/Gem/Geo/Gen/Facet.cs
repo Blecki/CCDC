@@ -13,7 +13,7 @@ namespace Gem.Geo
         public static Mesh FacetCopy(Mesh m)
         {
             var result = new Mesh();
-            result.verticies = new VertexPositionNormalTexture[m.indicies.Length];
+            result.verticies = new Vertex[m.indicies.Length];
             result.indicies = new short[m.indicies.Length];
 
             for (short i = 0; i < m.indicies.Length; ++i)
@@ -29,6 +29,19 @@ namespace Gem.Geo
                     result.verticies[i + j].Normal = normal;
             }
             return result;
+        }
+
+        public static void CalculateTangentsAndBiNormals(Mesh m)
+        {
+            for (short i = 0; i < m.verticies.Length; i += 3)
+            {
+                var normals = Gen.CalculateTangentAndBinormal(m, i, i + 1, i + 2);
+                for (int j = 0; j < 3; ++j)
+                {
+                    m.verticies[i + j].Tangent = normals.Item1;
+                    m.verticies[i + j].BiNormal = normals.Item2;
+                }
+            }
         }
     }
 }

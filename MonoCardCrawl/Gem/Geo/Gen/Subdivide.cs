@@ -78,7 +78,7 @@ namespace Gem.Geo
                 });
             }
 
-            var newVerticies = new VertexPositionNormalTexture[mesh.verticies.Length + edges.Count];
+            var newVerticies = new Vertex[mesh.verticies.Length + edges.Count];
             for (int i = 0; i < mesh.verticies.Length; ++i) newVerticies[i] = mesh.verticies[i];
 
             foreach (var edge in edges)

@@ -7,11 +7,18 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Gem.Render.SceneGraph
 {
-    public interface ISceneNode
+    public class ISceneNode
     {
-        void UpdateWorldTransform(Matrix m);
-        void Draw(RenderContext context);
-        void Visit(Action<ISceneNode> callback);
-        void CalculateLocalMouse(Ray mouseRay, Action<VertexPositionColor, VertexPositionColor> debug);
+        protected Matrix WorldTransform;
+        public Euler Orientation { get; set; }
+
+        public virtual void UpdateWorldTransform(Matrix M)
+        {
+            WorldTransform = M * Orientation.Transform;
+        }
+
+        public virtual void PreDraw(float ElapsedSeconds, RenderContext Context) { }
+        public virtual void Draw(RenderContext Context) { }
+        public virtual void CalculateLocalMouse(Ray MouseRay) { }
     }
 }

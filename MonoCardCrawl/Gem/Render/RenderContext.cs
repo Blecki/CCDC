@@ -10,33 +10,64 @@ namespace Gem.Render
 {
     public class RenderContext
     {
-		protected Effect Effect;
-        protected GraphicsDevice device;
-        public ICamera Camera;
-		protected int Technique = 0;
-		public bool ProtectDiffuseColor = false;
+		private Effect Effect;
+        private GraphicsDevice Device;
+        public Gem.Render.ICamera Camera;
+        public bool LightingEnabled = true;
+
+		private Gem.Geo.Vertex[] VertexBuffer = new Gem.Geo.Vertex[8];
+
+        private Vector3[] LightPosition = new Vector3[16];
+        private float[] LightFalloff = new float[16];
+        private Vector3[] LightColor = new Vector3[16];
 
         public Texture2D White { get; private set; }
-		private VertexPositionNormalTexture[] VertexBuffer = new VertexPositionNormalTexture[8];
+        public Texture2D Black { get; private set; }
+        public Texture2D NeutralNormals { get; private set; }
 
-        public void BeginScene(Effect effect, int Technique, GraphicsDevice device)
+        public RenderContext(Effect Effect, GraphicsDevice Device)
         {
-			this.Effect = effect;
-			this.Technique = Technique;
-            this.device = device;
+            this.Effect = Effect;
+            this.Device = Device;
 
-            if (White == null)
-            {
-                White = new Texture2D(device, 1, 1, false, SurfaceFormat.Color);
-                White.SetData(new Color[] { new Color(255, 255, 255, 255) });
-            }
+            for (var i = 0; i < 8; ++i) SetLight(i, Vector3.Zero, 0.0f, Vector3.Zero);
 
-            ApplyChanges();
+            White = new Texture2D(Device, 1, 1, false, SurfaceFormat.Color);
+            White.SetData(new Color[] { new Color(255, 255, 255, 255) }); 
+            
+            Black = new Texture2D(Device, 1, 1, false, SurfaceFormat.Color);
+            Black.SetData(new Color[] { new Color(0, 0, 0, 255) });
+
+            NeutralNormals = new Texture2D(Device, 1, 1, false, SurfaceFormat.Color);
+            NeutralNormals.SetData(new Color[] { new Color(128, 128, 255, 255) });
+
+
+            //HeightMap = White;
+            //HeightMapScale = 1.0f;
+            //Texture = White;
         }
+
+        public void SetLight(int Index, Vector3 Position, float Falloff, Vector3 Color)
+        {
+            if (Index < 0 || Index >= 8) throw new IndexOutOfRangeException();
+            LightPosition[Index] = Position;
+            LightFalloff[Index] = Falloff;
+            LightColor[Index] = Color;
+        }
+
+        public int ActiveLightCount { set { Effect.Parameters["ActiveLights"].SetValue((float)value); } }
 
         public void ApplyChanges()
         {
-			Effect.CurrentTechnique = Effect.Techniques[Technique];
+            Effect.CurrentTechnique = Effect.Techniques[LightingEnabled ? 0 : 1];
+
+            Effect.Parameters["LightPosition"].SetValue(LightPosition);
+            Effect.Parameters["LightFalloff"].SetValue(LightFalloff);
+            Effect.Parameters["LightColor"].SetValue(LightColor);
+
+            Effect.Parameters["View"].SetValue(Camera.View);
+            Effect.Parameters["Projection"].SetValue(Camera.Projection);
+
             Effect.CurrentTechnique.Passes[0].Apply();
         }
 
@@ -57,99 +88,120 @@ namespace Gem.Render
             }
         }
 
+        public virtual Texture2D NormalMap { set { if (Effect.Parameters["NormalMap"] != null) Effect.Parameters["NormalMap"].SetValue(value); } }
+
         public virtual Vector3 Color
         {
             set
             {
-				if (!ProtectDiffuseColor)
-					Effect.Parameters["DiffuseColor"].SetValue(new Vector4(value, 1.0f));
+				Effect.Parameters["DiffuseColor"].SetValue(new Vector4(value, 1.0f));
             }
         }
 
-        public void Draw(Geo.CompiledModel model)
+        public void Draw(Geo.IMesh Mesh)
         {
-            device.SetVertexBuffer(model.verticies);
-            device.Indices = model.indicies;
-            device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, model.verticies.VertexCount,
-                0, System.Math.Min(model.primitiveCount, 65535));
+            ApplyChanges();
+            Mesh.Render(Device);
         }
 
-        public void Draw(Geo.Mesh mesh)
+        //public void Draw(Gem.Geo.CompiledModel model)
+        //{
+        //    ApplyChanges();
+
+        //    Device.SetVertexBuffer(model.verticies);
+        //    Device.Indices = model.indicies;
+        //    Device.DrawIndexedPrimitives(PrimitiveType.TriangleList, 0, 0, model.verticies.VertexCount,
+        //        0, System.Math.Min(model.primitiveCount, 65535));
+        //}
+
+        //public void Draw(Gem.Geo.Mesh mesh)
+        //{
+        //    if (mesh.verticies.Length > 0)
+        //    {
+        //        ApplyChanges();
+
+        //        Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, mesh.verticies, 0, mesh.verticies.Length,
+        //            mesh.indicies, 0, mesh.indicies.Length / 3);
+        //    }
+        //}
+
+        //public void DrawLine(Vector3 v0, Vector3 v1, float width, Vector3 n)
+        //{
+        //    var tangent = v1 - v0;
+        //    tangent.Normalize();
+        //    var offset = Vector3.Transform(tangent, Matrix.CreateFromAxisAngle(n, (float)(System.Math.PI / 2)));
+        //    offset.Normalize();
+        //    offset *= width / 2;
+
+        //    VertexBuffer[0].Position = v0 + offset;
+        //    VertexBuffer[1].Position = v1 + offset;
+        //    VertexBuffer[2].Position = v0 - offset;
+        //    VertexBuffer[3].Position = v1 + offset;
+        //    VertexBuffer[4].Position = v1 - offset;
+        //    VertexBuffer[5].Position = v0 - offset;
+
+        //    for (int i = 0; i < 6; ++i) VertexBuffer[i].Normal = n;
+
+        //    device.DrawUserPrimitives(PrimitiveType.TriangleList, VertexBuffer, 0, 2);
+        //}
+
+        //public void DrawPoint()
+        //{
+        //    VertexBuffer[0].Position = new Vector3(-0.5f, -0.5f, 0);
+        //    VertexBuffer[1].Position = new Vector3(-0.5f, 0.5f, 0);
+        //    VertexBuffer[2].Position = new Vector3(0.5f, -0.5f, 0);
+        //    VertexBuffer[3].Position = new Vector3(0.5f, 0.5f, 0);
+        //    for (int i = 0; i < 6; ++i) VertexBuffer[i].Normal = Vector3.UnitZ;
+
+        //    device.DrawUserPrimitives(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
+        //}
+
+        //public void DrawSprite(Geo.Mesh mesh)
+        //{
+        //    if (mesh.verticies.Length > 0)
+        //    {
+        //        //spriteEffect.CurrentTechnique.Passes[0].Apply();
+        //        device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, mesh.verticies, 0, mesh.verticies.Length,
+        //            mesh.indicies, 0, mesh.indicies.Length / 3);
+        //    }
+        //}
+
+        public void DrawLineIM(Vector3 v0, Vector3 v1)
         {
-            if (mesh.verticies.Length > 0)
-            {
-                device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, mesh.verticies, 0, mesh.verticies.Length,
-                    mesh.indicies, 0, mesh.indicies.Length / 3);
-            }
+            VertexBuffer[0].Position = v0;
+            VertexBuffer[1].Position = v1;
+            Device.DrawUserPrimitives(PrimitiveType.LineList, VertexBuffer, 0, 1);
         }
 
-		public void DrawLine(Vector3 v0, Vector3 v1, float width, Vector3 n)
-		{
-			var tangent = v1 - v0;
-			tangent.Normalize();
-			var offset = Vector3.Transform(tangent, Matrix.CreateFromAxisAngle(n, (float)(System.Math.PI / 2)));
-			offset.Normalize();
-			offset *= width / 2;
-
-			VertexBuffer[0].Position = v0 + offset;
-			VertexBuffer[1].Position = v1 + offset;
-			VertexBuffer[2].Position = v0 - offset;
-			VertexBuffer[3].Position = v1 + offset;
-			VertexBuffer[4].Position = v1 - offset;
-			VertexBuffer[5].Position = v0 - offset;
-
-			for (int i = 0; i < 6; ++i) VertexBuffer[i].Normal = n;
-
-			device.DrawUserPrimitives(PrimitiveType.TriangleList, VertexBuffer, 0, 2);
-		}
-
-		public void DrawPoint()
-		{
-			VertexBuffer[0].Position = new Vector3(-0.5f, -0.5f, 0);
-			VertexBuffer[1].Position = new Vector3(-0.5f, 0.5f, 0);
-			VertexBuffer[2].Position = new Vector3(0.5f, -0.5f, 0);
-			VertexBuffer[3].Position = new Vector3(0.5f, 0.5f, 0);
-			for (int i = 0; i < 6; ++i) VertexBuffer[i].Normal = Vector3.UnitZ;
-
-			device.DrawUserPrimitives(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
-		}
-
-        public void DrawSprite(Geo.Mesh mesh)
+        public void DrawLines(Gem.Geo.Mesh mesh)
         {
-            if (mesh.verticies.Length > 0)
-            {
-                //spriteEffect.CurrentTechnique.Passes[0].Apply();
-                device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, mesh.verticies, 0, mesh.verticies.Length,
-                    mesh.indicies, 0, mesh.indicies.Length / 3);
-            }
-        }
+            ApplyChanges();
 
-		public void DrawLineIM(Vector3 v0, Vector3 v1)
-		{
-			VertexBuffer[0].Position = v0;
-			VertexBuffer[1].Position = v1;
-			device.DrawUserPrimitives(PrimitiveType.LineList, VertexBuffer, 0, 1);
-		}
+            if (mesh.lineIndicies == null) mesh.PrepareLineIndicies();
 
-        public void DrawLines(Geo.Mesh mesh)
-        {
             if (mesh.lineIndicies != null && mesh.verticies.Length > 0)
-                device.DrawUserIndexedPrimitives(PrimitiveType.LineList, mesh.verticies, 0, mesh.verticies.Length,
+                Device.DrawUserIndexedPrimitives(PrimitiveType.LineList, mesh.verticies, 0, mesh.verticies.Length,
                     mesh.lineIndicies, 0, mesh.lineIndicies.Length / 2);
         }
 
+        //public void Draw(Gem.Geo.WireframeMesh Mesh)
+        //{
+        //    ApplyChanges();
+        //    Device.DrawUserIndexedPrimitives(PrimitiveType.LineList, Mesh.verticies, 0, Mesh.verticies.Length, Mesh.indicies, 0, Mesh.indicies.Length / 2);
+        //}
 
-		public void DrawHitbox(float X, float Y, float W, float H)
-		{
 
-			VertexBuffer[0].Position = new Vector3(X, Y, 0);
-			VertexBuffer[1].Position = new Vector3(X, Y + H, 0);
-			VertexBuffer[2].Position = new Vector3(X + W, Y, 0);
-			VertexBuffer[3].Position = new Vector3(X + W, Y + H, 0);
-			for (int i = 0; i < 4; ++i) VertexBuffer[i].Normal = Vector3.UnitZ;
+        //public void DrawHitbox(float X, float Y, float W, float H)
+        //{
 
-			device.DrawUserPrimitives(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
-		}
+        //    VertexBuffer[0].Position = new Vector3(X, Y, 0);
+        //    VertexBuffer[1].Position = new Vector3(X, Y + H, 0);
+        //    VertexBuffer[2].Position = new Vector3(X + W, Y, 0);
+        //    VertexBuffer[3].Position = new Vector3(X + W, Y + H, 0);
+        //    for (int i = 0; i < 4; ++i) VertexBuffer[i].Normal = Vector3.UnitZ;
+
+        //    device.DrawUserPrimitives(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
+        //}
 	}
 
 }

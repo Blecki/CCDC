@@ -19,7 +19,7 @@ namespace Gem.Geo
         {
             var result = new Mesh();
 
-            result.verticies = new VertexPositionNormalTexture[mesh.verticies.Length];
+            result.verticies = new Vertex[mesh.verticies.Length];
             for (int i = 0; i < mesh.verticies.Length; ++i) result.verticies[i] = mesh.verticies[i];
             result.indicies = new short[mesh.indicies.Length];
             CopyIndicies(result.indicies, 0, mesh.indicies);
@@ -37,7 +37,11 @@ namespace Gem.Geo
             Quaternion rot;
             m.Decompose(out scale, out rot, out trans);
             for (int i = start; i < start + count; ++i)
+            {
                 mesh.verticies[i].Normal = Vector3.Transform(mesh.verticies[i].Normal, rot);
+                mesh.verticies[i].Tangent = Vector3.Transform(mesh.verticies[i].Tangent, rot);
+                mesh.verticies[i].BiNormal = Vector3.Transform(mesh.verticies[i].BiNormal, rot);
+            }
         }
 
         public static Mesh TransformCopy(Mesh mesh, Matrix m, int start, int count)
@@ -76,9 +80,94 @@ namespace Gem.Geo
                      part.GetVertex(c).Position - part.GetVertex(a).Position));
         }
 
-        public static VertexPositionNormalTexture[] GetVerticies(Mesh mesh, int startIndex, int Length)
+        public static Tuple<Vector3, Vector3> CalculateTangentAndBinormal(Mesh part, int a, int b, int c)
         {
-            var r = new VertexPositionNormalTexture[Length];
+            var _a = part.GetVertex(a);
+            var _b = part.GetVertex(b);
+            var _c = part.GetVertex(c);
+
+            //// Calculate the two vectors for this face.
+            //vector1[0] = vertex2.x - vertex1.x;
+            //vector1[1] = vertex2.y - vertex1.y;
+            //vector1[2] = vertex2.z - vertex1.z;
+            
+            var v1 = part.GetVertex(b).Position - part.GetVertex(a).Position;
+
+            //vector2[0] = vertex3.x - vertex1.x;
+            //vector2[1] = vertex3.y - vertex1.y;
+            //vector2[2] = vertex3.z - vertex1.z;
+
+            var v2 = part.GetVertex(c).Position - part.GetVertex(a).Position;
+
+            //// Calculate the tu and tv texture space vectors.
+            //tuVector[0] = vertex2.tu - vertex1.tu;
+            //tuVector[1] = vertex3.tu - vertex1.tu;
+
+            var tu = new Vector2(
+                part.GetVertex(b).TextureCoordinate.X - part.GetVertex(a).TextureCoordinate.X,
+                part.GetVertex(c).TextureCoordinate.X - part.GetVertex(a).TextureCoordinate.X);
+
+            //tvVector[0] = vertex2.tv - vertex1.tv;
+            //tvVector[1] = vertex3.tv - vertex1.tv;
+
+            var tv = new Vector2(
+                part.GetVertex(b).TextureCoordinate.Y - part.GetVertex(a).TextureCoordinate.Y,
+                part.GetVertex(c).TextureCoordinate.Y - part.GetVertex(a).TextureCoordinate.Y);
+
+            //// Calculate the denominator of the tangent/binormal equation.
+            //den = 1.0f / (tuVector[0] * tvVector[1] - tuVector[1] * tvVector[0]);
+
+            var den = 1.0f / (tu.X * tv.Y - tu.Y * tv.X);
+
+            //// Calculate the cross products and multiply by the coefficient to get the tangent and binormal.
+            //tangent.x = (tvVector[1] * vector1[0] - tvVector[0] * vector2[0]) * den;
+            //tangent.y = (tvVector[1] * vector1[1] - tvVector[0] * vector2[1]) * den;
+            //tangent.z = (tvVector[1] * vector1[2] - tvVector[0] * vector2[2]) * den;
+
+            var tangent = new Vector3(
+                tv.Y * v1.X - tv.X * v2.X,
+                tv.Y * v1.Y - tv.X * v2.Y,
+                tv.Y * v1.Z - tv.X * v2.Z) * den;
+
+            //binormal.x = (tuVector[0] * vector2[0] - tuVector[1] * vector1[0]) * den;
+            //binormal.y = (tuVector[0] * vector2[1] - tuVector[1] * vector1[1]) * den;
+            //binormal.z = (tuVector[0] * vector2[2] - tuVector[1] * vector1[2]) * den;
+
+            var binormal = new Vector3(
+                tu.X * v2.X - tu.Y * v1.X,
+                tu.X * v2.Y - tu.Y * v1.Y,
+                tu.X * v2.Z - tu.Y * v1.Z) * den;
+
+            //// Calculate the length of this normal.
+            //length = sqrt((tangent.x * tangent.x) + (tangent.y * tangent.y) + (tangent.z * tangent.z));
+
+            //// Normalize the normal and then store it
+            //tangent.x = tangent.x / length;
+            //tangent.y = tangent.y / length;
+            //tangent.z = tangent.z / length;
+
+            //// Calculate the length of this normal.
+            //length = sqrt((binormal.x * binormal.x) + (binormal.y * binormal.y) + (binormal.z * binormal.z));
+
+            //// Normalize the normal and then store it
+            //binormal.x = binormal.x / length;
+            //binormal.y = binormal.y / length;
+            //binormal.z = binormal.z / length;
+
+            tangent.Normalize();
+            binormal.Normalize();
+
+            return Tuple.Create(tangent, binormal);
+        }
+
+        public static Vector3 CalculateNormal(Vector3 Tangent, Vector3 BiNormal)
+        {
+            return Vector3.Normalize(Vector3.Cross(Tangent, BiNormal));
+        }
+        
+        public static Vertex[] GetVerticies(Mesh mesh, int startIndex, int Length)
+        {
+            var r = new Vertex[Length];
             for (int i = 0; i < Length; ++i) r[i] = mesh.verticies[i + startIndex];
             return r;
         }
@@ -104,7 +193,7 @@ namespace Gem.Geo
         {
             var result = new Mesh();
 
-            result.verticies = new VertexPositionNormalTexture[parts.Sum((p) => p.verticies.Length)];
+            result.verticies = new Vertex[parts.Sum((p) => p.verticies.Length)];
             result.indicies = new short[parts.Sum((p) => p.indicies.Length)];
 
             int vCount = 0;

@@ -10,47 +10,27 @@ namespace Gem.Render.SceneGraph
 {
     public class MeshNode : ISceneNode
     {
-        public Euler Orientation = null;
-
         public Mesh Mesh;
         public Vector3 Color = Vector3.One;
         public Texture2D Texture = null;
 
-        public MeshNode(Mesh mesh, Euler Orientation = null) 
-        { 
-            this.Mesh = mesh;
+        public MeshNode(Mesh Mesh, Texture2D Texture, Euler Orientation = null)
+        {
+            this.Mesh = Mesh;
+            this.Texture = Texture;
             this.Orientation = Orientation;
             if (this.Orientation == null) this.Orientation = new Euler();
         }
 
-        private Matrix worldTransformation = Matrix.Identity;
-
-        public void UpdateWorldTransform(Matrix m)
+        public override void Draw(RenderContext Context)
         {
-            worldTransformation = m * Orientation.Transform;
+            Context.Color = Color;
+            if (Texture != null) Context.Texture = Texture;
+            else Context.Texture = Context.White;
+            Context.NormalMap = Context.NeutralNormals;
+            Context.World = WorldTransform;
+            Context.ApplyChanges();
+            Context.Draw(Mesh);
         }
-
-        public virtual void Draw(RenderContext context)
-        {
-            context.Color = Color;
-            if (Texture != null) context.Texture = Texture;
-            else context.Texture = context.White;
-            context.World = worldTransformation;
-            context.ApplyChanges();
-            context.Draw(Mesh);
-
-            if (Mesh.lineIndicies != null)
-            {
-                context.Color = Vector3.Zero;
-                context.ApplyChanges();
-                context.DrawLines(Mesh);
-            }
-            
-        }
-
-        public void Visit(Action<ISceneNode> callback) { callback(this); }
-
-        public void CalculateLocalMouse(Ray mouseRay, Action<VertexPositionColor, VertexPositionColor> debug) { }
-
     }
 }

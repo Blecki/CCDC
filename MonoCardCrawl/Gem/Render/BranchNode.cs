@@ -9,10 +9,6 @@ namespace Gem.Render.SceneGraph
 {
     public class BranchNode : ISceneNode
     {
-        internal BranchNode parent = null;
-
-        public Euler Orientation = null;
-
         public BranchNode(Euler Orientation = null)
         {
             this.Orientation = Orientation;
@@ -25,30 +21,25 @@ namespace Gem.Render.SceneGraph
         public void Remove(ISceneNode child) { children.Remove(child); }
         public IEnumerator<ISceneNode> GetEnumerator() { return children.GetEnumerator(); }
 
-        public void UpdateWorldTransform(Matrix m)
+        public override void UpdateWorldTransform(Matrix M)
         {
-            foreach (var child in this)
-                child.UpdateWorldTransform(m * Orientation.Transform);
+            base.UpdateWorldTransform(M);
+            foreach (var child in this) child.UpdateWorldTransform(WorldTransform);
         }
 
-        public virtual void Draw(RenderContext context)
+        public override void PreDraw(float ElapsedSeconds, RenderContext Context)
         {
-            foreach (var child in this)
-                child.Draw(context);
+            foreach (var child in this) child.PreDraw(ElapsedSeconds, Context);
         }
 
-        public void Visit(Action<ISceneNode> callback)
+        public override void Draw(RenderContext Context)
         {
-            callback(this);
-            foreach (var child in this)
-                child.Visit(callback);
+            foreach (var child in this) child.Draw(Context);
         }
 
-        public void CalculateLocalMouse(Ray mouseRay, Action<VertexPositionColor, VertexPositionColor> debug)
+        public override void CalculateLocalMouse(Ray MouseRay)
         {
-            foreach (var child in this)
-                child.CalculateLocalMouse(mouseRay, debug);
+            foreach (var child in this) child.CalculateLocalMouse(MouseRay);
         }
-
     }
 }

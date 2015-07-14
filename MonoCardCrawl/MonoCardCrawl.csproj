@@ -54,8 +54,18 @@
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Game\Actor.cs" />
+    <Compile Include="Game\Actors\QuadActor.cs" />
+    <Compile Include="Game\Actors\StaticMesh.cs" />
     <Compile Include="Game\Cell.cs" />
+    <Compile Include="Game\EditorGrid.cs" />
+    <Compile Include="Game\HeightMapMeshNode.cs" />
+    <Compile Include="Game\Tiles\FloorTile.cs" />
+    <Compile Include="Game\Tiles\BlockTile.cs" />
+    <Compile Include="Game\WorldModel-GenerateNavigationMesh - Copy.cs" />
+    <Compile Include="Game\WorldModel-CreateStaticGeometryBuffers.cs" />
     <Compile Include="Game\CellGrid.cs" />
+    <Compile Include="Game\NavigationMesh.cs" />
     <Compile Include="Gem\Common\Euler.cs" />
     <Compile Include="Gem\Common\Grid.cs" />
     <Compile Include="Gem\Common\MultiDictionary.cs" />
@@ -65,18 +75,18 @@
     <Compile Include="Gem\Common\Console\ConsoleWindow.cs" />
     <Compile Include="Gem\Common\Console\DynamicConsoleBuffer.cs" />
     <Compile Include="Gem\Common\ScriptBuilder.cs" />
-    <Compile Include="Gem\Render\DebuggingContext.cs" />
-    <Compile Include="Game\GameRenderer.cs" />
+    <Compile Include="Gem\Geo\Gen\InstanceMerge.cs" />
+    <Compile Include="Gem\Geo\WireframeMesh-GenGrid.cs" />
+    <Compile Include="Gem\Geo\WireframeMesh.cs" />
     <Compile Include="Gem\Geo\EdgeMesh\EdgeMesh.cs" />
     <Compile Include="Gem\Geo\EdgeMesh\RayIntersection.cs" />
     <Compile Include="Gem\Geo\EdgeMesh\SimplifyEdgeMesh.cs" />
     <Compile Include="Gem\Geo\EdgeMesh\TangentTrace.cs" />
-    <Compile Include="Game\PathFindingResult.cs" />
+    <Compile Include="Gem\PathFindingResult.cs" />
     <Compile Include="Game\ScriptBase.cs" />
-    <Compile Include="Game\ModelScreen.cs" />
+    <Compile Include="Game\WorldScreen.cs" />
     <Compile Include="Game\Tile.cs" />
     <Compile Include="Gem\Common\Grid3D.cs" />
-    <Compile Include="Game\TileGridNode.cs" />
     <Compile Include="Gem\EmptyScreen.cs" />
     <Compile Include="Gem\Common\EpisodeContentManager.cs" />
     <Compile Include="Gem\Common\AddMany.cs" />
@@ -105,7 +115,7 @@
     <Compile Include="Gem\Gui\FlowLayout.cs" />
     <Compile Include="Gem\Gui\GridLayout.cs" />
     <Compile Include="Gem\Gui\GuiDriver.cs" />
-    <Compile Include="Gem\Gui\GuiRenderable.cs" />
+    <Compile Include="Gem\Gui\GuiSceneNode.cs" />
     <Compile Include="Gem\Gui\Layout.cs" />
     <Compile Include="Gem\Gui\TextFieldLogic.cs" />
     <Compile Include="Gem\Gui\UIItem.cs" />
@@ -127,6 +137,8 @@
     <Compile Include="Gem\Common\Vector.cs" />
     <Compile Include="Gem\Common\Pathfinding.cs" />
     <Compile Include="Gem\Program.cs" />
+    <Compile Include="Gem\Render\RenderContext.cs" />
+    <Compile Include="Gem\Render\CompiledMeshNode.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Gem\Render\FreeCamera.cs" />
     <Compile Include="Gem\Render\OrbitCamera.cs" />
@@ -135,22 +147,18 @@
     <Compile Include="Gem\Render\ICamera.cs" />
     <Compile Include="Gem\Render\ImmediateMode2d.cs" />
     <Compile Include="Gem\Render\ImmediateModeDebug.cs" />
-    <Compile Include="Gem\Render\IRenderable.cs" />
     <Compile Include="Gem\Render\MatrixStack.cs" />
-    <Compile Include="Gem\Render\ObjectSet.cs" />
-    <Compile Include="Gem\Render\RenderContext.cs" />
-    <Compile Include="Gem\Render\Renderer.cs" />
     <Compile Include="Gem\Render\BranchNode.cs" />
-    <Compile Include="Gem\Render\GuiNode.cs" />
     <Compile Include="Gem\Render\ISceneNode.cs" />
     <Compile Include="Gem\Render\MeshNode.cs" />
-    <Compile Include="Gem\Render\Root.cs" />
-    <Compile Include="Gem\Render\SpriteNode.cs" />
     <Compile Include="Game\World.cs" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="MonoGame.Framework">
       <HintPath>$(MSBuildProgramFiles32)\MonoGame\v3.0\Assemblies\Windows\MonoGame.Framework.dll</HintPath>
+    </Reference>
+    <Reference Include="SharpRuleEngine">
+      <HintPath>..\packages\SharpRuleEngine.1.0.1\lib\SharpRuleEngine.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Windows.Forms" />
@@ -183,6 +191,9 @@
       <ProductName>Windows Installer 4.5</ProductName>
       <Install>true</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\MonoGame\v3.0\MonoGame.Content.Builder.targets" />

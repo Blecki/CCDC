@@ -12,7 +12,7 @@ namespace Gem.Geo
         public static Mesh CreateCube()
         {
             var result = new Mesh();
-            result.verticies = new VertexPositionNormalTexture[8];
+            result.verticies = new Vertex[8];
             result.verticies[0].Position = new Vector3( -0.5f, -0.5f, -0.5f);
             result.verticies[1].Position = new Vector3(  0.5f, -0.5f, -0.5f);
             result.verticies[2].Position = new Vector3(  0.5f,  0.5f, -0.5f);

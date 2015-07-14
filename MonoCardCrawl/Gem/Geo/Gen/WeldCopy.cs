@@ -12,7 +12,7 @@ namespace Gem.Geo
         //Merge identicle verticies in mesh
         public static Mesh WeldCopy(Mesh m)
         {
-            var resultVerticies = new List<VertexPositionNormalTexture>();
+            var resultVerticies = new List<Vertex>();
             var indexMap = new Dictionary<short, short>();
 
             for (short i = 0; i < m.verticies.Length; i += 1)

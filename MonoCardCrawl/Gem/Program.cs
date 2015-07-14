@@ -20,7 +20,8 @@ namespace MonoCardCrawl
         {
             using (var game = new Gem.Main(""))
             {
-                game.Game = new ModelScreen();
+                game.Game = new WorldScreen();
+                game.Window.Position = new Microsoft.Xna.Framework.Point(50, 50);
                 game.Run();
             }
         }

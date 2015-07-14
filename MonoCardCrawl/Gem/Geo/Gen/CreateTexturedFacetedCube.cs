@@ -18,6 +18,8 @@ namespace Gem.Geo
             for (int i = 0; i < result.VertexCount; ++i)
                 result.verticies[i].TextureCoordinate += new Vector2(0.5f, 0.5f);
 
+            Gen.CalculateTangentsAndBiNormals(result);
+
             return result;
         }
     }

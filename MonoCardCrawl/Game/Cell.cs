@@ -8,16 +8,5 @@ namespace MonoCardCrawl
     public class Cell
     {
         public Tile Tile;
-        public String LoadedTileName = "";
-
-        public bool Solid
-        {
-            get
-            {
-                if (Tile == null) return false;
-                return true;
-            }
-        }
-
     }
 }

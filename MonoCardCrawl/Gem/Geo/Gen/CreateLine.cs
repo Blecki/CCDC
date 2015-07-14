@@ -16,7 +16,7 @@ namespace Gem.Geo
             var lineP = Vector3.Cross(lineV, normal);
 
             var result = new Mesh();
-            result.verticies = new VertexPositionNormalTexture[4];
+            result.verticies = new Vertex[4];
             result.verticies[0].Position = v0 + (lineP * (width / 2.0f));
             result.verticies[1].Position = v0 - (lineP * (width / 2.0f));
             result.verticies[2].Position = v1 - (lineP * (width / 2.0f));

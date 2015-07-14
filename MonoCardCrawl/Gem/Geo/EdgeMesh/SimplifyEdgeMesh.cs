@@ -290,6 +290,8 @@ namespace Gem.Geo
 
             foreach (var face in Faces)
                 CalculateCentroid(face);
+
+            this.Edges = new List<EMEdge>(this.Faces.SelectMany(f => f.edges).Distinct());
         }
 
         public static EMEdge FindSharedEdge(EMFace a, EMFace b)

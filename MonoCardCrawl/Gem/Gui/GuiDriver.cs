@@ -27,7 +27,7 @@ namespace Gem.Gui
             defaultSettings.Add("TEXT-COLOR", new Vector3(1, 1, 1));
             defaultSettings.Add("FG-COLOR", new Vector3(1, 1, 1));
             defaultSettings.Add("HIDDEN-CONTAINER", null);
-            defaultSettings.Add(    "FONT", new BitmapFont(Content.Load<Texture2D>("Content/small-font"), 6, 8, 6));
+            defaultSettings.Add("FONT", new BitmapFont(Content.Load<Texture2D>("Content/small-font"), 6, 8, 6));
         }
 
         public void DrawRoot(UIItem root, Render.Cameras.OrthographicCamera camera, RenderTarget2D target)
@@ -37,19 +37,12 @@ namespace Gem.Gui
             root.Render(uiRenderer);
         }
 
-        public void DrawRenderable(Renderable renderable)
+        public SceneNode MakeGUI(UInt32 ID, int w, int h)
         {
-            uiRenderer.Camera = renderable.uiCamera;
-            uiRenderer.BeginScene(renderable.renderTarget);
-            renderable.uiRoot.Render(uiRenderer);
+            return new SceneNode(device, this, w, h, null);
         }
 
-        public Renderable MakeGUI(UInt32 ID, int w, int h)
-        {
-            return new Renderable(device, this, w, h, null);
-        }
-
-        public List<List<Object>> Update(float elapsedSeconds, Input Input, Renderable guiNode)
+        public List<List<Object>> Update(float elapsedSeconds, Input Input, SceneNode guiNode)
         {
             var mousePressed = Input.Check("click");
             var events = new List<List<Object>>();
@@ -59,12 +52,12 @@ namespace Gem.Gui
             return events;
         }
 
-        public List<List<Object>> FlatUpdate(float elapsedSeconds, Input Input, Renderable node)
+        public List<List<Object>> FlatUpdate(float elapsedSeconds, Input Input, SceneNode node)
         {
             var mouse = Input.QueryAxis("primary");
             node.MouseHover = true;
-                node.LocalMouseX = (int)(mouse.X - node.uiRoot.rect.X);
-                node.LocalMouseY = (int)(mouse.Y - node.uiRoot.rect.Y);
+            node.LocalMouseX = (int)(mouse.X - node.uiRoot.rect.X);
+            node.LocalMouseY = (int)(mouse.Y - node.uiRoot.rect.Y);
             return Update(elapsedSeconds, Input, node);
         }
 

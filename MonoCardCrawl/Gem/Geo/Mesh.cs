@@ -7,15 +7,43 @@ using Microsoft.Xna.Framework;
 
 namespace Gem.Geo
 {
-    public class Mesh
+    public struct Vertex : IVertexType
     {
-        public VertexPositionNormalTexture[] verticies;
+        public Vector3 Position;
+        public Vector3 Normal;
+        public Vector2 TextureCoordinate;
+        public Vector3 Tangent;
+        public Vector3 BiNormal;
+
+        public readonly static VertexDeclaration VertexDeclaration = new VertexDeclaration
+        (
+        new VertexElement(0, VertexElementFormat.Vector3, VertexElementUsage.Position, 0),
+        new VertexElement(12, VertexElementFormat.Vector3, VertexElementUsage.Normal, 0),
+        new VertexElement(24, VertexElementFormat.Vector2, VertexElementUsage.TextureCoordinate, 0),
+        new VertexElement(32, VertexElementFormat.Vector3, VertexElementUsage.TextureCoordinate, 1),
+        new VertexElement(44, VertexElementFormat.Vector3, VertexElementUsage.TextureCoordinate, 2)
+        );
+
+        VertexDeclaration IVertexType.VertexDeclaration
+        {
+            get { return VertexDeclaration; }
+        }
+    }
+
+    public interface IMesh
+    {
+        void Render(GraphicsDevice Device);
+    }
+
+    public class Mesh : IMesh
+    {
+        public Vertex[] verticies;
         public short[] indicies;
         public short[] lineIndicies;
 
         public int VertexCount { get { return verticies.Length; } }
 
-        public VertexPositionNormalTexture GetVertex(int i)
+        public Vertex GetVertex(int i)
         {
             return verticies[i];
         }
@@ -32,6 +60,12 @@ namespace Gem.Geo
                 lineIndicies[i * 2 + 4] = indicies[i + 2];
                 lineIndicies[i * 2 + 5] = indicies[i];
             }
+        }
+
+        public void Render(GraphicsDevice Device)
+        {
+            Device.DrawUserIndexedPrimitives(PrimitiveType.TriangleList, verticies, 0, verticies.Length,
+                                indicies, 0, indicies.Length / 3);
         }
     }
 }
