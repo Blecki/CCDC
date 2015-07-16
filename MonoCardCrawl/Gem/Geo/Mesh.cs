@@ -35,11 +35,12 @@ namespace Gem.Geo
         void Render(GraphicsDevice Device);
     }
 
-    public class Mesh : IMesh
+    public partial class Mesh : IMesh
     {
         public Vertex[] verticies;
         public short[] indicies;
         public short[] lineIndicies;
+        public Object Tag;
 
         public int VertexCount { get { return verticies.Length; } }
 

@@ -23,6 +23,18 @@ namespace Gem.Common
             for (int i = 0; i < tiles.Length; ++i) tiles[i] = new T();
         }
 
+        public Grid3D(int width, int height, int depth, Func<int,int,int,T> CellCreator)
+        {
+            this.width = width;
+            this.height = height;
+            this.depth = depth;
+
+            tiles = new T[this.width * this.height * this.depth];
+
+            forAll((c, x, y, z) => this[x, y, z] = CellCreator(x, y, z));
+        }
+
+
         public int Normalize(int x, int y, int z)
         {
             return (z * height * width) + (y * width) + x;
@@ -40,6 +52,11 @@ namespace Gem.Common
                 for (var _y = (y < 0 ? 0 : y); _y < (y + h) && _y < height; ++_y)
                     for (var _z = (z < 0 ? 0 : z); _z < (z + d) && _z < depth; ++_z)
                         func(this[_x, _y, _z], _x, _y, _z);
+        }
+
+        public void forAll(Action<T, int, int, int> func)
+        {
+            forRect(0, 0, 0, width, height, depth, func);
         }
 
         public A abortedForRect<A>(int x, int y, int z, int w, int h, int d, Func<T, int, int, int, A> func)

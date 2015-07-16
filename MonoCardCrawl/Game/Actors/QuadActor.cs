@@ -23,24 +23,25 @@ namespace MonoCardCrawl.Game.Actors
             Mesh = Gem.Geo.Gen.FacetCopy(Mesh);
             Gem.Geo.Gen.CalculateTangentsAndBiNormals(Mesh);
 
-            branch.Add(new MonoCardCrawl.NormalMapMeshNode(Mesh, Sprite, NormalMap, Orientation));
 
             var shadowMesh = Gem.Geo.Gen.CreateQuad();
-            Gem.Geo.Gen.Transform(shadowMesh, Matrix.CreateTranslation(0, 0, 0.1f));
+            //Gem.Geo.Gen.Transform(shadowMesh, Matrix.CreateTranslation(0, 0, 0.1f));
             shadowMesh = Gem.Geo.Gen.FacetCopy(shadowMesh);
             Gem.Geo.Gen.CalculateTangentsAndBiNormals(shadowMesh);
 
             branch.Add(new Gem.Render.SceneGraph.MeshNode(shadowMesh, DropShadow, ShadowOrientation));
+            branch.Add(new MonoCardCrawl.NormalMapMeshNode(Mesh, Sprite, NormalMap, Orientation));
 
             Renderable = branch;
         }
 
         public override void Update(World World)
         {
-            var downRay = new Ray(Orientation.Position + new Vector3(0,0,1), new Vector3(0, 0, -1));
-            var floorHit = World.NavMesh.RayIntersection(downRay);
-            if (floorHit != null)
-                ShadowOrientation.Position = downRay.Position + (downRay.Direction * floorHit.distance) - new Vector3(0, 0, 0.01f);
+            ShadowOrientation.Position = Orientation.Position;
+            //var downRay = new Ray(Orientation.Position + new Vector3(0,0,1), new Vector3(0, 0, -1));
+            //var floorHit = World.CombatGrid.RayIntersection(downRay);
+            //if (floorHit.Intersects)
+            //    ShadowOrientation.Position = downRay.Position + (downRay.Direction * floorHit.Distance) - new Vector3(0, 0, 0.01f);
 
         }
     }

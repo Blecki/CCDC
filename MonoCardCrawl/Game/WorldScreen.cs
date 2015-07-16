@@ -21,9 +21,9 @@ namespace MonoCardCrawl
         public RenderContext RenderContext { get; private set; }
         public Gem.Render.Cameras.FreeCamera Camera { get; private set; }
         private World World;
-        private Gem.Geo.EMFace HitFace;
         private Gem.Render.SceneGraph.BranchNode SceneGraph;
-        private EditorGrid Grid;
+        //private EditorGrid Grid;
+        private CombatGrid CombatGrid;
 
         public WorldScreen()
         {
@@ -34,7 +34,7 @@ namespace MonoCardCrawl
             Content = new EpisodeContentManager(Main.EpisodeContent.ServiceProvider, "Content");
             
             World = new World(Content);
-            World.Grid.resize(16, 10, 16);
+            World.Grid.resize(16, 10, 3);
 
             RenderContext = new RenderContext(Content.Load<Effect>("draw"), Main.GraphicsDevice);
             Camera = new Gem.Render.Cameras.FreeCamera(new Vector3(0, 0, 0), Vector3.UnitY, Vector3.UnitZ, Main.GraphicsDevice.Viewport);
@@ -57,7 +57,7 @@ namespace MonoCardCrawl
 
             SceneGraph = new Gem.Render.SceneGraph.BranchNode();
 
-            World.SpawnActor(new Game.Actors.QuadActor(Content.Load<Texture2D>("link01"), Content.Load<Texture2D>("normal-map"), shadow), new Vector3(4, 4, 4.25f));
+            World.SpawnActor(new Game.Actors.QuadActor(Content.Load<Texture2D>("link01"), Content.Load<Texture2D>("normal-map"), shadow), new Vector3(4.5f, 4.5f, 0.25f));
             
             Camera.Position = CameraFocus + new Vector3(0, -4, 3);
             Camera.LookAt(CameraFocus);
@@ -75,14 +75,26 @@ namespace MonoCardCrawl
 
             Main.ScriptBuilder.DeriveScriptsFrom("MonoCardCrawl.ScriptBase");
 
-            World.NavMesh = WorldModel.GenerateNavigationMesh(World.Grid);
+            
 
             var StaticWorld = WorldModel.CreateStaticGeometryBuffers(World, Main.GraphicsDevice);
             SceneGraph.Add(StaticWorld);
 
-            Grid = new EditorGrid(Main.GraphicsDevice, 16, 10);
-            Grid.Orientation.Scale = new Vector3(16, 10, 1.0f);
-            SceneGraph.Add(Grid);
+            //Grid = new EditorGrid(Main.GraphicsDevice, 16, 10);
+            //Grid.Orientation.Scale = new Vector3(16, 10, 1.0f);
+            //SceneGraph.Add(Grid);
+
+            CombatGrid = CombatGrid.CreateFromCellGrid(World.Grid);
+            var hilite = Content.Load<Texture2D>("hilite");
+            var footstep = Content.Load<Texture2D>("path");
+            CombatGrid.Cells.forAll((c, x, y, z) => { if (c != null) c.Texture = hilite; });
+            SceneGraph.Add(new CombatGridVisual(CombatGrid));
+
+            var pathFinder = new Pathfinding<CombatCell>(c => new List<CombatCell>(c.Links.Select(l => l.Neighbor)), (a) => 1.0f);
+            var path = pathFinder.Flood(CombatGrid.Cells[4, 4, 0], c => false, c => 1.0f);
+            foreach (var node in path.VisitedNodes)
+                if (node.Value.PathCost <= 4)
+                    node.Key.Texture = footstep;
         }
 
         public void End()
@@ -91,8 +103,8 @@ namespace MonoCardCrawl
 
         public void Update(float elapsedSeconds)
         {
-            if (Main.Input.Check("GRID-UP")) Grid.Orientation.Position.Z += 1;
-            if (Main.Input.Check("GRID-DOWN")) Grid.Orientation.Position.Z -= 1;
+            //if (Main.Input.Check("GRID-UP")) Grid.Orientation.Position.Z += 1;
+            //if (Main.Input.Check("GRID-DOWN")) Grid.Orientation.Position.Z -= 1;
 
             if (Main.Input.Check("RIGHT")) Camera.Yaw(elapsedSeconds);
             if (Main.Input.Check("LEFT")) Camera.Yaw(-elapsedSeconds);
@@ -101,10 +113,10 @@ namespace MonoCardCrawl
 
             if (Main.Input.Check("CLICK"))
             {
-                var pickVector = Camera.Unproject(new Vector3(Main.Input.QueryAxis("MAIN"), 0));
-                var hitFace = World.NavMesh.RayIntersection(new Ray(Camera.Position, pickVector - Camera.Position));
-                if (hitFace != null && hitFace.face != null)
-                    this.HitFace = hitFace.face;
+                //var pickVector = Camera.Unproject(new Vector3(Main.Input.QueryAxis("MAIN"), 0));
+                //var hitFace = World.NavMesh.RayIntersection(new Ray(Camera.Position, pickVector - Camera.Position));
+                //if (hitFace != null && hitFace.face != null)
+                //    this.HitFace = hitFace.face;
 
             }
 
@@ -150,9 +162,10 @@ namespace MonoCardCrawl
 
             RenderContext.World = Matrix.Identity;
             RenderContext.Texture = RenderContext.White;
-            World.NavMesh.DebugRender(RenderContext);
-            if (HitFace != null) 
-                World.NavMesh.DebugRenderFace(RenderContext, HitFace);
+            
+            //World.NavMesh.DebugRender(RenderContext);
+            //if (HitFace != null) 
+            //    World.NavMesh.DebugRenderFace(RenderContext, HitFace);
         }
     }
 }

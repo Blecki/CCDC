@@ -106,6 +106,16 @@ namespace Gem.Math
 			return (Math.Utility.AlmostZero(A.X) && Math.Utility.AlmostZero(A.Y));
 		}
 
+        public static bool NearlyEqual(Vector3 A, Vector3 B)
+        {
+            return AlmostZero(A - B);
+        }
+
+        public static bool AlmostZero(Vector3 A)
+        {
+            return (Math.Utility.AlmostZero(A.X) && Math.Utility.AlmostZero(A.Y) && Math.Utility.AlmostZero(A.Z));
+        }
+
         public static void RoundVector(ref Vector2 vec, float divisions)
         {
             vec.X = (float)System.Math.Round(vec.X * divisions) / divisions;

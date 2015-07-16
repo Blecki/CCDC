@@ -40,7 +40,7 @@ namespace MonoCardCrawl
                     foreach (var n in e.Neighbors)
                         if (n != null && !Object.ReferenceEquals(n, f) && !r.Contains(n)) r.Add(n);
                 return r;
-            }, (a,b) => 1);
+            }, (a) => 1);
 
         public void DebugRender(Gem.Render.RenderContext Context)
         {
@@ -68,14 +68,15 @@ namespace MonoCardCrawl
 			if (actorFace == null) return r;
 			var destinationFace = Mesh.FaceAt(to);
 			if (destinationFace == null) return r;
-			var path = pathfinder.FindPath(actorFace.face,
-				(f) => { return Object.ReferenceEquals(f, destinationFace); });
-			if (!path.FoundPath) return r;
+			var pathResult = pathfinder.Flood(actorFace.face,
+				(f) => { return Object.ReferenceEquals(f, destinationFace); }, f => 1.0f);
+			if (!pathResult.GoalFound) return r;
 			r.PathPoints.Add(from);
-			for (int i = 0; i < path.Path.Count - 1; ++i)
+            var path = pathResult.FinalNode.ExtractPath();
+			for (int i = 0; i < path.Count - 1; ++i)
 			{
-				var a = path.Path[i];
-				var b = path.Path[i + 1];
+				var a = path[i];
+				var b = path[i + 1];
 				var sharedEdge = Gem.Geo.EdgeMesh.FindSharedEdge(a, b);
 				if (sharedEdge == null) throw new InvalidProgramException("Pathfinder found invalid path");
 				r.PathPoints.Add(Mesh.FindEdgeCenter(sharedEdge));

@@ -13,6 +13,7 @@ namespace MonoCardCrawl
             var meshes = new List<Gem.Geo.Mesh>();
             From.ForEachTile((c, x, y, z) =>
                 {
+                    // Avoid adding tiles that have a tile directly above them.
                     if (z != (From.depth - 1))
                         if (From.CellAt(x, y, z + 1).Tile != null) return;
 
@@ -23,6 +24,7 @@ namespace MonoCardCrawl
                         {
                             mesh = Gem.Geo.Gen.Copy(mesh);
                             Gem.Geo.Gen.Transform(mesh, Matrix.CreateTranslation(x + 0.5f, y + 0.5f, z));
+                            mesh.Tag = c;
                             meshes.Add(mesh);
                         }
                     }
@@ -32,7 +34,6 @@ namespace MonoCardCrawl
             rawNavMesh = Gem.Geo.Gen.WeldCopy(rawNavMesh);
             
             var navMesh = new Gem.Geo.EdgeMesh(rawNavMesh);
-            navMesh.Simplify();
             return NavigationMesh.Create(navMesh);
         }
     }

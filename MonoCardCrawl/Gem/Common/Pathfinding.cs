@@ -12,18 +12,19 @@ namespace Gem
     public class Pathfinding<NODE> where NODE: class
     {
         private Func<NODE, List<NODE>> EnumerateNeighbors;
-        private Func<NODE, NODE, float> Heuristic;
+        private Func<NODE, float> Cost;
 
-        public Pathfinding(Func<NODE, List<NODE>> EnumerateNeighbors, Func<NODE, NODE, float> Heuristic)
+        public Pathfinding(Func<NODE, List<NODE>> EnumerateNeighbors, Func<NODE, float> Cost)
         {
             this.EnumerateNeighbors = EnumerateNeighbors;
-            this.Heuristic = Heuristic;
+            this.Cost = Cost;
         }
 
         public class PathfindingResult
         {
-            public List<NODE> Path;
-            public bool FoundPath = false;
+            public Dictionary<NODE, PathNode> VisitedNodes;
+            public PathNode FinalNode;
+            public bool GoalFound = false;
         }
 
         internal enum NodeState
@@ -32,58 +33,76 @@ namespace Gem
             Closed
         }
 
-        internal class PathNode
+        public class PathNode
         {
             internal PathNode Parent;
             internal float PathCost;
+            internal float PredictedCost;
             internal NODE RealNode;
             internal NodeState state = NodeState.Open;
+
+            public List<NODE> ExtractPath()
+            {
+                var r = new List<NODE>();
+                var pathEnd = this;
+                while (pathEnd != null)
+                {
+                    r.Add(pathEnd.RealNode);
+                    pathEnd = pathEnd.Parent;
+                }
+
+                r.Reverse();
+                return r;
+            }
         }
 
-        public PathfindingResult FindPath(NODE from, Func<NODE, bool> goal)
+        public Pathfinding<NODE>.PathfindingResult Flood(
+            NODE From, 
+            Func<NODE, bool> Goal,
+            Func<NODE, float> Heuristic)
         {
-            var nodes = new Dictionary<NODE, PathNode>();
-            var head = new PathNode { Parent = null, RealNode = from, state = NodeState.Closed };
-            nodes.Add(from, head);
+            var result = new Pathfinding<NODE>.PathfindingResult();
+            result.VisitedNodes = new Dictionary<NODE, PathNode>();
+            var head = new PathNode { Parent = null, RealNode = From, state = NodeState.Closed, PathCost = 0 };
+            result.VisitedNodes.Add(From, head);
             var openNodes = new List<PathNode>();
-
-            var result = new PathfindingResult();
-            result.FoundPath = false;
+            result.GoalFound = false;           
 
             while (head != null)
             {
-                if (goal(head.RealNode))
+                if (Goal(head.RealNode))
                 {
-                    var pathEnd = head;
-                    result.Path = new List<NODE>();
-                    while (pathEnd != null)
-                    {
-                        result.Path.Add(pathEnd.RealNode);
-                        pathEnd = pathEnd.Parent;
-                    }
-                    result.Path.Reverse();
-                    result.FoundPath = true;
+                    result.FinalNode = head;
+                    result.GoalFound = true;
                     return result;
                 }
 
                 foreach (var newOpenNode in EnumerateNeighbors(head.RealNode))
                 {
-                    if (nodes.ContainsKey(newOpenNode)) continue;
-                    var newNode = new PathNode { Parent = head, RealNode = newOpenNode, state = NodeState.Open };
-                    nodes.Add(newOpenNode, newNode);
-                    openNodes.Add(newNode); //TODO: Sort addition based on heuristic
+                    if (result.VisitedNodes.ContainsKey(newOpenNode)) continue;
+                    var newNode = new PathNode
+                    {
+                        Parent = head,
+                        RealNode = newOpenNode,
+                        state = NodeState.Open,
+                        PathCost = head.PathCost + Cost(newOpenNode),
+                        PredictedCost = head.PathCost + Cost(newOpenNode) + Heuristic(newOpenNode)
+                    };
+                    result.VisitedNodes.Add(newOpenNode, newNode);
+                    openNodes.Add(newNode); 
                 }
 
                 if (openNodes.Count == 0) head = null;
                 else
                 {
-                    head = openNodes[0];
+                    head = openNodes.First(n => n.PredictedCost == openNodes.Min(p => p.PredictedCost));
+                    //head = openNodes[0];
                     head.state = NodeState.Closed;
-                    openNodes.RemoveAt(0);
+                    openNodes.Remove(head);
+                    //openNodes.RemoveAt(0);
                 }
             }
 
-            result.FoundPath = false;
             return result;
         }
     }

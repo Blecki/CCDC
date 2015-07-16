@@ -14,7 +14,6 @@ namespace MonoCardCrawl
 		public CellGrid Grid;
 		public Dictionary<String, Tile> TileSet = new Dictionary<String, Tile>();
         public List<Actor> Actors = new List<Actor>();
-        public NavigationMesh NavMesh;
 
         public World(EpisodeContentManager Content)
         {
