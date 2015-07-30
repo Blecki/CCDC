@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Gem;
 
-namespace MonoCardCrawl
+namespace Game
 {
     public class CombatCell
     {
@@ -24,6 +24,7 @@ namespace MonoCardCrawl
         {
             public Direction Direction;
             public CombatCell Neighbor;
+            public Vector3 EdgePoint;
         }
 
         public static Vector3 DirectionOffset(Direction Direction)
@@ -38,11 +39,31 @@ namespace MonoCardCrawl
             }
         }
 
+        /// <summary>
+        /// Assuming the two coordinates are adjacent, what direction would you go to
+        /// move from A to B?
+        /// </summary>
+        /// <param name="A"></param>
+        /// <param name="B"></param>
+        /// <returns></returns>
+        public static Direction DirectionFromAToB(Coordinate A, Coordinate B)
+        {
+            if (B.X > A.X) return Direction.East;
+            if (B.X < A.X) return Direction.West;
+            if (B.Y > A.Y) return Direction.South;
+            if (B.Y < A.Y) return Direction.North;
+            throw new InvalidOperationException();
+        }
+
         public bool Visible = true;
         public Gem.Geo.Mesh Mesh;
         public Cell ParentCell;
-        public Texture2D Texture;
+        public int Texture;
+        public Coordinate Coordinate;
+        public Vector3 CenterPoint;
+        public Actor AnchoredActor;
 
         public List<Link> Links;
+        public Pathfinding<CombatCell>.PathNode PathNode;
     }
 }

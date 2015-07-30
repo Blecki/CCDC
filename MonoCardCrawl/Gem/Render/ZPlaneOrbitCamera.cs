@@ -4,7 +4,7 @@ using System.Linq;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Gem.Render.Cameras
+namespace Gem.Render
 {
     public class ZPlaneOrbitCamera : ICamera
     {

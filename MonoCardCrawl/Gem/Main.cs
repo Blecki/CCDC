@@ -17,6 +17,8 @@ namespace Gem
         public IScreen Game { get { return activeGame; } set { nextGame = value; } }
 		public EpisodeContentManager EpisodeContent;
         public ScriptBuilder ScriptBuilder;
+        private Render.RenderContext RenderContext;
+        private Render.OrthographicCamera ConsoleCamera;
 
         private List<Console.ConsoleWindow> Consoles = new List<Console.ConsoleWindow>();
         
@@ -32,8 +34,6 @@ namespace Gem
         GraphicsDeviceManager graphics;
 
         public Input Input { get; private set; }
-
-        public Render.ImmediateMode2d Immediate2d = null;
 
         public bool ConsoleOpen { get; private set; }
         private string startupCommand;
@@ -110,8 +110,10 @@ namespace Gem
                 if (action != null) action();
             };
             mainConsole.Resize(GraphicsDevice.Viewport.Bounds, 2);
-            
-            Immediate2d = new Gem.Render.ImmediateMode2d(GraphicsDevice);
+
+            RenderContext = new Render.RenderContext(EpisodeContent.Load<Effect>("Content/draw"), GraphicsDevice);
+            ConsoleCamera = new Render.OrthographicCamera(GraphicsDevice.Viewport);
+            ConsoleCamera.focus = new Vector2(GraphicsDevice.Viewport.Width / 2, GraphicsDevice.Viewport.Height / 2);
 
 			Input.PushKeyboardHandler(new MainKeyboardHandler(this));
         }
@@ -179,12 +181,16 @@ namespace Gem
             if (ConsoleOpen)
             {
                 GraphicsDevice.DepthStencilState = DepthStencilState.None;
-                Immediate2d.Camera.focus = new Vector2(Immediate2d.Camera.Viewport.Width / 2,
-                    Immediate2d.Camera.Viewport.Height / 2);
-                Immediate2d.BeginScene(null, false);
+                RenderContext.Camera = ConsoleCamera;
+                RenderContext.LightingEnabled = false;
+                RenderContext.World = Matrix.Identity;
+                RenderContext.UVTransform = Matrix.Identity;
+                RenderContext.NormalMap = RenderContext.NeutralNormals;
+                RenderContext.Alpha = 0.75f;
+                RenderContext.ApplyChanges();
 
                 foreach (var consoleWindow in Consoles)
-                    consoleWindow.Draw(Immediate2d);
+                    consoleWindow.Draw(RenderContext);
             }
             
             base.Draw(gameTime);

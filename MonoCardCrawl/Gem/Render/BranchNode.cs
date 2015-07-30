@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Gem.Render.SceneGraph
+namespace Gem.Render
 {
     public class BranchNode : ISceneNode
     {
@@ -37,9 +37,9 @@ namespace Gem.Render.SceneGraph
             foreach (var child in this) child.Draw(Context);
         }
 
-        public override void CalculateLocalMouse(Ray MouseRay)
+        public override void CalculateLocalMouse(Ray MouseRay, Action<ISceneNode, float> HoverCallback)
         {
-            foreach (var child in this) child.CalculateLocalMouse(MouseRay);
+            foreach (var child in this) child.CalculateLocalMouse(MouseRay, HoverCallback);
         }
     }
 }

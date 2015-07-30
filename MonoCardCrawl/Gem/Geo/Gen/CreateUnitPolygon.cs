@@ -57,6 +57,27 @@ namespace Gem.Geo
             return result;
         }
 
+        public static Mesh CreateSlantedQuad(float Slant)
+        {
+            var result = new Mesh();
+            result.verticies = new Vertex[4];
+
+            result.verticies[0].Position = new Vector3(-0.5f, -0.5f, 0);
+            result.verticies[1].Position = new Vector3(0.5f, -0.5f, 0);
+            result.verticies[2].Position = new Vector3(0.5f, 0.5f, Slant);
+            result.verticies[3].Position = new Vector3(-0.5f, 0.5f, Slant);
+
+            for (int i = 0; i < 4; ++i)
+            {
+                result.verticies[i].TextureCoordinate =
+                    new Vector2(result.verticies[i].Position.X + 0.5f, result.verticies[i].Position.Y + 0.5f);
+                result.verticies[i].Normal = -Vector3.UnitZ;
+            }
+
+            result.indicies = new short[] { 0, 2, 1, 3, 2, 0 };
+            return result;
+        }
+
         public static Mesh CreateSpriteQuad()
         {
             var result = new Mesh();

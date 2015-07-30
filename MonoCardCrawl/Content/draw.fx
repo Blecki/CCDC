@@ -4,23 +4,17 @@ float4x4 Projection;
 
 float4x4 WorldInverseTranspose;
 
-//float3 DiffuseLightDirection = float3(0.3, -0.4, -0.5);
-float4 DiffuseColor = float4(1, 1, 1, 1);
-/*float DiffuseIntensity = 1.0;
-float3 FillLightDirection = float3(-0.6,0.5,0.2);
-float4 FillColor = float4(0.5,0.5,1,0.5);
-float FillIntensity = 0.5;
-*/
+float4 DiffuseColor;
+float Alpha;
 
-float3 LightPosition[16];// = { float3(2, 2, 2), float3(4,4,4) };
+float3 LightPosition[16];
 float LightFalloff[16];
 float3 LightColor[16];
-float ActiveLights = 16;
-
+float ActiveLights;
 
 texture Texture;
 texture NormalMap;
-
+float4x4 UVTransform;
 
 sampler normalMapSampler = sampler_state
 {
@@ -75,7 +69,11 @@ TexturedVertexShaderOutput TexturedVertexShaderFunction(TexturedVertexShaderInpu
 	output.Normal = normalize(mul(input.Normal, World));
 	output.Tangent = normalize(mul(input.Tangent, World));
 	output.BiNormal = normalize(mul(input.BiNormal, World));
-	output.Texcoord = input.Texcoord;
+
+	float4 tTexcoord = float4(input.Texcoord[0], input.Texcoord[1], 1, 1);
+	tTexcoord = mul(tTexcoord, UVTransform);
+
+	output.Texcoord = float2(tTexcoord[0], tTexcoord[1]);
     return output;
 }
 
@@ -99,23 +97,15 @@ PixelShaderOutput PSTexturedColor(TexturedVertexShaderOutput input) : COLOR0
     // Normalize the resulting bump normal.
     bumpNormal = normalize(bumpNormal);
 
-//output.Color = float4(bumpNormal * 255, 1.0f);
-//output.Color.a = 1.0f;
-//return output;
-
 	for (int i = 0; i < ActiveLights; ++i)
 	{
 		float lightAttenuation = 1 - (length(input.WorldPos - LightPosition[i]) / LightFalloff[i]);
 		float lightIntensity = clamp(dot(bumpNormal, input.WorldPos - LightPosition[i]), 0, 1);
 		output.Color += saturate(texColor * DiffuseColor * float4(LightColor[i],1) * lightAttenuation * lightIntensity);
 	}
-	//output.Color = DiffuseColor * (1 - (lightIntensity / LightFalloff));
-		 /*output.Color = saturate(
-		 (DiffuseColor * lightIntensity * diffuse)
-		 + (FillColor * dot(normal, FillLightDirection)));*/
-		 //output.Color = diffuse;// *0.1;
-	output.Color.a = texColor.a;
-	clip(texColor.a - 0.1);
+
+	output.Color.a = texColor.a * Alpha;
+	clip(texColor.a < 0.1f ? -1:1);
 
 	output.Color.r = floor(output.Color.r * 16) / 16;
 	output.Color.g = floor(output.Color.g * 16) / 16;
@@ -129,7 +119,9 @@ PixelShaderOutput PSTexturedColorNoLight(TexturedVertexShaderOutput input) : COL
     PixelShaderOutput output;
 	float4 texColor = tex2D(diffuseSampler, input.Texcoord);
     output.Color = texColor * DiffuseColor;
-	output.Color.a = texColor.a;
+	output.Color.a = texColor.a * Alpha;
+	clip(texColor.a < 0.1f ? -1 : 1);
+
     return output;
 }
 
@@ -137,7 +129,7 @@ technique DrawTextured
 {
     pass Pass1
     {
-		AlphaBlendEnable = true;
+		AlphaBlendEnable = false;
 		BlendOp = Add;
 		SrcBlend = One;
 		DestBlend = InvSrcAlpha;

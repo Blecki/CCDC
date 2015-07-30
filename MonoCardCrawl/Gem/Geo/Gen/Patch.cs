@@ -8,7 +8,7 @@ namespace Gem.Geo
 {
     public partial class Gen
     {
-        public Mesh CreatePatch(Vector3[] points, int tesselation)
+        public static Mesh CreatePatch(Vector3[] points, int tesselation)
         {
             var r = new Mesh();
             r.indicies = CreatePatchIndices(tesselation, false);
@@ -16,7 +16,7 @@ namespace Gem.Geo
             return r;
         }
 
-        private short[] CreatePatchIndices(int tessellation, bool isMirrored)
+        private static short[] CreatePatchIndices(int tessellation, bool isMirrored)
         {
             var r = new short[6 * tessellation * tessellation];
             var ri = 0;
@@ -53,7 +53,7 @@ namespace Gem.Geo
             return r;
         }
 
-        private Vertex[] CreatePatchVertices(Vector3[] patch, int tessellation, bool isMirrored)
+        private static Vertex[] CreatePatchVertices(Vector3[] patch, int tessellation, bool isMirrored)
         {
             var r = new List<Vertex>();
             Debug.Assert(patch.Length == 16);
@@ -109,7 +109,12 @@ namespace Gem.Geo
                         //    normal = Vector3.Down;
                     }
                     // Create the vertex.
-                    r.Add(new Vertex() { Position = position, Normal = normal });
+                    r.Add(new Vertex()
+                    {
+                        Position = position,
+                        Normal = normal,
+                        TextureCoordinate = new Vector2(ti, tj)
+                    });
                 }
             }
 

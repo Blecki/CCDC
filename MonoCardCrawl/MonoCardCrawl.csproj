@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">x86</Platform>
@@ -8,7 +8,7 @@
     <ProjectGuid>{856F107D-02F3-49B1-99E9-CA672B871975}</ProjectGuid>
     <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>MonoCardCrawl</RootNamespace>
+    <RootNamespace>Game</RootNamespace>
     <AssemblyName>MonoCardCrawl</AssemblyName>
     <FileAlignment>512</FileAlignment>
     <MonoGamePlatform>Windows</MonoGamePlatform>
@@ -29,6 +29,8 @@
     <IsWebBootstrapper>false</IsWebBootstrapper>
     <UseApplicationTrust>false</UseApplicationTrust>
     <BootstrapperEnabled>true</BootstrapperEnabled>
+    <TargetFrameworkVersion>v4.5.1</TargetFrameworkVersion>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -40,6 +42,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -49,26 +52,41 @@
     <DefineConstants>TRACE;WINDOWS</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <ApplicationIcon>Icon.ico</ApplicationIcon>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Include="Game\Actors\Actions\Idle.cs" />
+    <Compile Include="Game\ActorAction.cs" />
     <Compile Include="Game\Actor.cs" />
+    <Compile Include="Game\Input\WaitForIdle.cs" />
+    <Compile Include="Gem\Common\Animation.cs" />
+    <Compile Include="Game\Actors\AnimatedSpriteActor.cs" />
     <Compile Include="Game\Actors\QuadActor.cs" />
-    <Compile Include="Game\Actors\StaticMesh.cs" />
+    <Compile Include="Game\Actors\StaticMeshActor.cs" />
     <Compile Include="Game\Cell.cs" />
+    <Compile Include="Game\Coordinate.cs" />
     <Compile Include="Game\CombatCell.cs" />
     <Compile Include="Game\CombatGridVisual.cs" />
     <Compile Include="Game\CombatGrid.cs" />
     <Compile Include="Game\EditorGrid.cs" />
-    <Compile Include="Game\HeightMapMeshNode.cs" />
+    <Compile Include="Gem\Common\AnimationTimer.cs" />
+    <Compile Include="Gem\Gui\GuiProperties.cs" />
+    <Compile Include="Gem\Gui\GuiRenderStack.cs" />
+    <Compile Include="Gem\Render\NormalMapMeshNode.cs" />
+    <Compile Include="Gem\PropertyBag.cs" />
+    <Compile Include="Game\Tiles\RampTile.cs" />
     <Compile Include="Game\Tiles\FloorTile.cs" />
     <Compile Include="Game\Tiles\BlockTile.cs" />
+    <Compile Include="Game\Actors\Actions\WalkPath.cs" />
     <Compile Include="Game\WorldModel-GenerateNavigationMesh.cs" />
     <Compile Include="Game\WorldModel-CreateStaticGeometryBuffers.cs" />
     <Compile Include="Game\CellGrid.cs" />
     <Compile Include="Game\NavigationMesh.cs" />
+    <Compile Include="Game\InputState.cs" />
+    <Compile Include="Game\Input\SelectTile.cs" />
     <Compile Include="Gem\Common\Euler.cs" />
     <Compile Include="Gem\Common\MultiDictionary.cs" />
     <Compile Include="Gem\Common\Console\ConsoleDisplay.cs" />
@@ -86,6 +104,7 @@
     <Compile Include="Gem\Geo\EdgeMesh\RayIntersection.cs" />
     <Compile Include="Gem\Geo\EdgeMesh\SimplifyEdgeMesh.cs" />
     <Compile Include="Gem\Geo\EdgeMesh\TangentTrace.cs" />
+    <Compile Include="Gem\HelperExtensions.cs" />
     <Compile Include="Gem\PathFindingResult.cs" />
     <Compile Include="Game\ScriptBase.cs" />
     <Compile Include="Game\WorldScreen.cs" />
@@ -115,15 +134,14 @@
     <Compile Include="Gem\Geo\Gen\WeldCopy.cs" />
     <Compile Include="Gem\Geo\Mesh.cs" />
     <Compile Include="Gem\Gui\BitmapFont.cs" />
-    <Compile Include="Gem\Gui\BorderLayout.cs" />
-    <Compile Include="Gem\Gui\FlowLayout.cs" />
-    <Compile Include="Gem\Gui\GridLayout.cs" />
-    <Compile Include="Gem\Gui\GuiDriver.cs" />
+    <Compile Include="Gem\Gui\Layouts\BorderLayout.cs" />
+    <Compile Include="Gem\Gui\Layouts\FlowLayout.cs" />
+    <Compile Include="Gem\Gui\Layouts\GridLayout.cs" />
     <Compile Include="Gem\Gui\GuiSceneNode.cs" />
-    <Compile Include="Gem\Gui\Layout.cs" />
+    <Compile Include="Gem\Gui\Layouts\Layout.cs" />
     <Compile Include="Gem\Gui\TextFieldLogic.cs" />
     <Compile Include="Gem\Gui\UIItem.cs" />
-    <Compile Include="Gem\Gui\VirtualLayout.cs" />
+    <Compile Include="Gem\Gui\Layouts\VirtualLayout.cs" />
     <Compile Include="Gem\Common\Input.cs" />
     <Compile Include="Gem\IScreen.cs" />
     <Compile Include="Gem\Common\KeyboardMessageFilter.cs" />
@@ -151,7 +169,7 @@
     <Compile Include="Gem\Render\ICamera.cs" />
     <Compile Include="Gem\Render\ImmediateMode2d.cs" />
     <Compile Include="Gem\Render\ImmediateModeDebug.cs" />
-    <Compile Include="Gem\Render\MatrixStack.cs" />
+    <Compile Include="Gem\Gui\MatrixStack.cs" />
     <Compile Include="Gem\Render\BranchNode.cs" />
     <Compile Include="Gem\Render\ISceneNode.cs" />
     <Compile Include="Gem\Render\MeshNode.cs" />
@@ -197,6 +215,7 @@
     </BootstrapperPackage>
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />

@@ -6,9 +6,8 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Gem.Geo;
 using Gem;
-using Gem.Render.SceneGraph;
 
-namespace MonoCardCrawl
+namespace Gem.Render
 {
     public class NormalMapMeshNode : ISceneNode
     {
@@ -16,6 +15,7 @@ namespace MonoCardCrawl
         public Vector3 Color = Vector3.One;
         public Texture2D Texture = null;
         public Texture2D NormalMap = null;
+        public Matrix UVTransform = Matrix.Identity;
 
         public NormalMapMeshNode(Mesh Mesh, Texture2D Texture, Texture2D NormalMap, Euler Orientation = null) 
         { 
@@ -32,9 +32,11 @@ namespace MonoCardCrawl
             if (Texture != null) context.Texture = Texture;
             context.NormalMap = NormalMap;
             context.World = WorldTransform;
+            context.UVTransform = UVTransform;
             context.ApplyChanges();
             context.Draw(Mesh);
             context.NormalMap = context.NeutralNormals;
+            context.UVTransform = Matrix.Identity;
         }
 
     }

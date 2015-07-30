@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Gem;
 
-namespace MonoCardCrawl
+namespace Game
 {
     public class CombatGrid
     {
@@ -37,6 +37,13 @@ namespace MonoCardCrawl
                         var combatCell = new CombatCell();
                         combatCell.Mesh = mesh;
                         combatCell.ParentCell = c;
+                        combatCell.Coordinate = new Coordinate(x, y, z);
+                        var centerPointRayOrigin  = new Vector3(x + 0.5f, y + 0.5f, z + 2.0f);
+                        var hitCenter = mesh.RayIntersection(new Ray(centerPointRayOrigin, new Vector3(0,0,-1)));
+                        if (hitCenter.Intersects)
+                            combatCell.CenterPoint = centerPointRayOrigin + (new Vector3(0, 0, -1) * hitCenter.Distance);
+                        else
+                            combatCell.CenterPoint = new Vector3(x + 0.5f, y + 0.5f, z + 0.5f);
                         
                         r.Cells[x, y, z] = combatCell;
                     }
@@ -73,7 +80,8 @@ namespace MonoCardCrawl
                             From.Links.Add(new CombatCell.Link
                             {
                                 Direction = Direction,
-                                Neighbor = neighbor
+                                Neighbor = neighbor,
+                                EdgePoint = (coincidentEdge.Value.P0 + coincidentEdge.Value.P1) / 2.0f
                             });
 
                     }
@@ -100,6 +108,19 @@ namespace MonoCardCrawl
             });
 
             return closestIntersection;
+        }
+
+        public void ClearTemporaryData()
+        {
+            Cells.forAll((c, x, y, z) =>
+                {
+                    if (c != null)
+                    {
+                        c.Visible = false;
+                        c.Texture = 0;
+                        c.AnchoredActor = null;
+                    }
+                });
         }
     }
 }

@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace MonoCardCrawl
+namespace Game
 {
-    public class Cell
+    public class Cell 
     {
         public Tile Tile;
     }

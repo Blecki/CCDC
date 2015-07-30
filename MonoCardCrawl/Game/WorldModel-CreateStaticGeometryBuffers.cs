@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace MonoCardCrawl
+namespace Game
 {
     public static partial class WorldModel
     {
@@ -25,7 +25,7 @@ namespace MonoCardCrawl
             }
         }
 
-        public static Gem.Render.SceneGraph.ISceneNode CreateStaticGeometryBuffers(World From, GraphicsDevice Device)
+        public static Gem.Render.ISceneNode CreateStaticGeometryBuffers(World From, GraphicsDevice Device)
         {
             var tilePiles = new List<List<TileInstance>>();
 
@@ -41,16 +41,15 @@ namespace MonoCardCrawl
                     existingPile.Add(new TileInstance(cell.Tile, x, y, z));
                 });
 
-            var r = new Gem.Render.SceneGraph.BranchNode();
+            var r = new Gem.Render.BranchNode();
 
             foreach (var pile in tilePiles)
             {
                 var mesh = Gem.Geo.Gen.InstanceMerge(
-                    pile[0].Tile.RenderMesh,
-                    pile.Count,
+                    pile.Select(i => i.Tile.RenderMesh),
                     pile.Select(t => Matrix.CreateTranslation(t.X + 0.5f, t.Y + 0.5f, t.Z)));
                 var compiledMesh = Gem.Geo.CompiledModel.CompileModel(mesh, Device);
-                r.Add(new Gem.Render.SceneGraph.CompiledMeshNode(compiledMesh, pile[0].Tile.Texture));
+                r.Add(new Gem.Render.CompiledMeshNode(compiledMesh, pile[0].Tile.Texture));
             }
 
             return r;

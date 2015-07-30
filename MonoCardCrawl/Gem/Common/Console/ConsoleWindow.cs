@@ -129,11 +129,11 @@ namespace Gem.Console
             HandlerMutex.ReleaseMutex();
         }
 
-        public void Draw(Gem.Render.ImmediateMode2d Immediate2d)
+        public void Draw(Gem.Render.RenderContext Immediate2d)
         {
                     Immediate2d.Texture = ConsoleRenderSurface;
-                    Immediate2d.Alpha = 0.75f;
-                    Immediate2d.Quad(ActualDrawSize);
+                    Immediate2d.Color = new Vector3(1, 1, 1);
+                    Immediate2d.ImmediateMode.Quad(ActualDrawSize, 10);
         }
 
 		internal void KeyDown(System.Windows.Forms.Keys Code, int Value)

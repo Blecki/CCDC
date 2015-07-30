@@ -6,7 +6,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Gem.Geo;
 
-namespace Gem.Render.SceneGraph
+namespace Gem.Render
 {
     public class CompiledMeshNode : ISceneNode
     {

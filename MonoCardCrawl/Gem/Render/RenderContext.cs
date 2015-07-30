@@ -25,6 +25,16 @@ namespace Gem.Render
         public Texture2D Black { get; private set; }
         public Texture2D NeutralNormals { get; private set; }
 
+        private ImmediateMode2D _immediateMode;
+        public ImmediateMode2D ImmediateMode
+        {
+            get
+            {
+                ApplyChanges();
+                return _immediateMode;
+            }
+        }
+
         public RenderContext(Effect Effect, GraphicsDevice Device)
         {
             this.Effect = Effect;
@@ -41,10 +51,7 @@ namespace Gem.Render
             NeutralNormals = new Texture2D(Device, 1, 1, false, SurfaceFormat.Color);
             NeutralNormals.SetData(new Color[] { new Color(128, 128, 255, 255) });
 
-
-            //HeightMap = White;
-            //HeightMapScale = 1.0f;
-            //Texture = White;
+            _immediateMode = new ImmediateMode2D(Device);
         }
 
         public void SetLight(int Index, Vector3 Position, float Falloff, Vector3 Color)
@@ -90,11 +97,27 @@ namespace Gem.Render
 
         public virtual Texture2D NormalMap { set { if (Effect.Parameters["NormalMap"] != null) Effect.Parameters["NormalMap"].SetValue(value); } }
 
+        public Matrix UVTransform
+        {
+            set
+            {
+                Effect.Parameters["UVTransform"].SetValue(value);
+            }
+        }
+
         public virtual Vector3 Color
         {
             set
             {
 				Effect.Parameters["DiffuseColor"].SetValue(new Vector4(value, 1.0f));
+            }
+        }
+
+        public float Alpha
+        {
+            set
+            {
+                Effect.Parameters["Alpha"].SetValue(value);
             }
         }
 

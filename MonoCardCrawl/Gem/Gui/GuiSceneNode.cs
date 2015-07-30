@@ -10,33 +10,34 @@ using Gem.Gui;
 
 namespace Gem.Gui
 {
-    public class SceneNode : Render.SceneGraph.ISceneNode
+    public class GuiSceneNode : Render.ISceneNode
     {
-        private GuiDriver module = null;
-        internal Render.Cameras.OrthographicCamera uiCamera = null;
+        internal Render.OrthographicCamera uiCamera = null;
         public UIItem uiRoot = null;
         internal RenderTarget2D renderTarget = null;
-        private Geo.CompiledModel quadModel = null;
-		public Matrix Offset = Matrix.Identity;
+        private Geo.Mesh Mesh;
 
         internal bool MouseHover = false;
         internal int LocalMouseX = 0;
         internal int LocalMouseY = 0;
+        internal UIItem HoverItem = null;
 
-        public SceneNode(GraphicsDevice device, GuiDriver module, int width, int height, Euler Euler = null)
+        GraphicsDevice Device;
+
+        public GuiSceneNode(Geo.Mesh Mesh, GraphicsDevice device, int width, int height, Euler Euler = null)
         {
-            this.module = module;
+            this.Device = device;
+            this.Mesh = Mesh;
+
             this.Orientation = Euler;
             if (this.Orientation == null) this.Orientation = new Euler();
 
-            uiCamera = new Render.Cameras.OrthographicCamera(new Viewport(0, 0, width, height));
-            uiRoot = new UIItem(new Rectangle(0, 0, width, height));
+            uiCamera = new Render.OrthographicCamera(new Viewport(0, 0, width, height));
+            uiRoot = new UIItem(new Rectangle(0, 0, width, height), null);
 
             uiCamera.focus = new Vector2(width / 2, height / 2);
 
             renderTarget = new RenderTarget2D(device, uiCamera.Viewport.Width, uiCamera.Viewport.Height);
-            quadModel = Geo.CompiledModel.CompileModel(Geo.Gen.FacetCopy(Geo.Gen.CreateQuad()), device);
-			uiRoot.Properties.Add(new UIItemProperties(null, module.defaultSettings));
         }
 
         public void ClearUI() { uiRoot.children.Clear(); }
@@ -46,35 +47,40 @@ namespace Gem.Gui
             return Vector3.Dot(A, B) / B.Length();
         }
 
-        public override void CalculateLocalMouse(Ray MouseRay)
+        public override void CalculateLocalMouse(Ray MouseRay, Action<Gem.Render.ISceneNode, float> HoverCallback)
         {
-            MouseHover = false;
+            if (HoverItem != null) HoverItem.Hover = false;
+            
+            var inverseTransform = Matrix.Invert(Orientation.Transform);
+            var localMouseSource = Vector3.Transform(MouseRay.Position, inverseTransform);
+            var localMouseDirection = Vector3.Transform(MouseRay.Direction, inverseTransform.Rotation);
+            var localMouse = new Ray(localMouseSource, localMouseDirection);
 
-            var verts = new Vector3[3];
-            verts[0] = new Vector3(-0.5f, -0.5f, 0);
-            verts[1] = new Vector3(0.5f, -0.5f, 0);
-            verts[2] = new Vector3(-0.5f, 0.5f, 0);
+            var intersection = Mesh.RayIntersection(localMouse);
+            if (intersection.Intersects)
+            {
+                LocalMouseX = (int)System.Math.Round(intersection.UV.X * uiCamera.Viewport.Width);
+                LocalMouseY = (int)System.Math.Round(intersection.UV.Y * uiCamera.Viewport.Height);
+                HoverItem = uiRoot.FindHoverItem(LocalMouseX, LocalMouseY);
+                if (HoverItem != null) HoverCallback(this, intersection.Distance);
+            }
+        }
 
-            for (int i = 0; i < 3; ++i)
-                verts[i] = Vector3.Transform(verts[i], WorldTransform);
-
-            var distance = MouseRay.Intersects(new Plane(verts[0], verts[1], verts[2]));
-            if (distance == null || !distance.HasValue) return;
-            if (distance.Value < 0) return; //GUI plane is behind camera
-            var interesectionPoint = MouseRay.Position + (MouseRay.Direction * distance.Value);
-
-            var x = ScalarProjection(interesectionPoint - verts[0], verts[1] - verts[0]) / (verts[1] - verts[0]).Length();
-            var y = ScalarProjection(interesectionPoint - verts[0], verts[2] - verts[0]) / (verts[2] - verts[0]).Length();
-
-            LocalMouseX = (int)(x * uiCamera.Viewport.Width);
-            LocalMouseY = (int)(y * uiCamera.Viewport.Height);
-
-            MouseHover = true;
+        public override void HandleMouse(bool Click)
+        {
+            if (HoverItem != null) HoverItem.Hover = true;
         }
 
         public override void PreDraw(float ElapsedSeconds, Render.RenderContext Context)
         {
-            module.DrawRoot(uiRoot, uiCamera, renderTarget);
+            Device.SetRenderTarget(renderTarget);
+            Device.Clear(Color.Transparent);
+            Context.Camera = uiCamera;
+            Context.Color = Vector3.One;
+            Context.Alpha = 1.0f;
+            Context.LightingEnabled = false;
+            Context.World = Matrix.Identity;
+            uiRoot.Render(Context);            
         }
 
         public override void Draw(Render.RenderContext Context)
@@ -82,17 +88,10 @@ namespace Gem.Gui
             Context.Color = Vector3.One;
             Context.Texture = renderTarget;
             Context.NormalMap = Context.NeutralNormals;
-            Context.World = WorldTransform;            
+            Context.World = WorldTransform;
+            Context.LightingEnabled = false;
             Context.ApplyChanges();
-            Context.Draw(quadModel);
-        }
-
-        public void DrawFlat(Render.RenderContext context, Gem.Render.Cameras.OrthographicCamera Camera)
-        {
-            var uiContext = module.GetRenderContext();
-            uiContext.Camera = Camera;
-            uiContext.BeginScene(null, false);
-            uiRoot.Render(uiContext);
+            Context.Draw(Mesh);
         }
     }
 }

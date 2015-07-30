@@ -36,7 +36,7 @@ namespace Gem.Gui
         }
 
         public static void RenderText(
-            String text, float X, float Y, float wrapAt, float scale, Render.ImmediateMode2d context, BitmapFont font, float depth = 0)
+            String text, float X, float Y, float wrapAt, float scale, Render.RenderContext context, BitmapFont font, float depth = 0)
         {
             //wrapAt /= scale;
             context.Texture = font.fontData;
@@ -70,7 +70,7 @@ namespace Gem.Gui
                     var fx = (code % col) * font.fgWidth;
                     var fy = (code / col) * font.fgHeight;
 
-                    context.Glyph(x, y, font.glyphWidth * scale, font.glyphHeight * scale, 
+                    context.ImmediateMode.Glyph(x, y, font.glyphWidth * scale, font.glyphHeight * scale, 
                         fx,
                         fy,
  						font.fgWidth,

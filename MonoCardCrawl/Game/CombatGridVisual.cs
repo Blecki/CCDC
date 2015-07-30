@@ -7,26 +7,27 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Gem;
 
-namespace MonoCardCrawl
+namespace Game
 {
-    public class CombatGridVisual : Gem.Render.SceneGraph.ISceneNode
+    public class CombatGridVisual : Gem.Render.ISceneNode
     {
         internal bool MouseHover = false;
         internal CombatCell CellUnderMouse = null;
         internal CombatGrid Grid;
-        internal Gem.Geo.Mesh LinkVisualizationQuad;
+        private Action<CombatCell> ClickCallback;
 
-        public CombatGridVisual(CombatGrid Grid, Euler Euler = null)
+        public Texture2D HoverTexture;
+        public Texture2D[] TextureTable;
+
+        public CombatGridVisual(CombatGrid Grid, Action<CombatCell> ClickCallback, Euler Euler = null)
         {
             this.Grid = Grid;
+            this.ClickCallback = ClickCallback;
             this.Orientation = Euler;
             if (this.Orientation == null) this.Orientation = new Euler();
-
-            LinkVisualizationQuad = Gem.Geo.Gen.FacetCopy(Gem.Geo.Gen.CreateQuad());
-            Gem.Geo.Gen.Transform(LinkVisualizationQuad, Matrix.CreateScale(0.25f));
         }
 
-        public override void CalculateLocalMouse(Ray MouseRay)
+        public override void CalculateLocalMouse(Ray MouseRay, Action<Gem.Render.ISceneNode, float> HoverCallback)
         {
             MouseHover = false;
             CellUnderMouse = null;
@@ -34,14 +35,21 @@ namespace MonoCardCrawl
             var closestIntersection = Grid.RayIntersection(MouseRay);
             if (closestIntersection.Intersects)
             {
-                MouseHover = true;
+                //MouseHover = true;
                 CellUnderMouse = closestIntersection.Tag as CombatCell;
+                HoverCallback(this, closestIntersection.Distance);
             }
+        }
+
+        public override void HandleMouse(bool Click)
+        {
+            MouseHover = true;
+            if (Click) ClickCallback(CellUnderMouse);
         }
 
         public override void Draw(Gem.Render.RenderContext Context)
         {
-            Context.Color = new Vector3(1, 0, 0);
+            Context.Color = new Vector3(1, 1, 1);
             Context.World = Orientation.Transform;
             Context.NormalMap = Context.NeutralNormals;
             Context.LightingEnabled = false;
@@ -50,24 +58,20 @@ namespace MonoCardCrawl
                 {
                     if (c != null && c.Visible)
                     {
-                        if (Object.ReferenceEquals(CellUnderMouse, c)) Context.Color = new Vector3(0, 1, 1);
-                        else Context.Color = Vector3.One;
-
-                        Context.World = Orientation.Transform;
-
-                        Context.Texture = c.Texture;
+                        Context.Texture = TextureTable[c.Texture];
                         Context.ApplyChanges();
                         Context.Draw(c.Mesh);
 
-                        //foreach (var link in c.Links)
-                        //{
-                        //    Context.Texture = Context.White;
-                        //    Context.World = Matrix.CreateTranslation(CombatCell.DirectionOffset(link.Direction) * 0.4f) * Matrix.CreateTranslation(x + 0.5f,y + 0.5f,z + 0.3f) * Orientation.Transform;
-                        //    Context.ApplyChanges();
-                        //    Context.Draw(LinkVisualizationQuad);
-                        //}
+                        if (HoverTexture != null && MouseHover && Object.ReferenceEquals(CellUnderMouse, c))
+                        {
+                            Context.Texture = HoverTexture;
+                            Context.ApplyChanges();
+                            Context.Draw(c.Mesh);
+                        }
                     }
                 });
+
+
         }
     }
 }

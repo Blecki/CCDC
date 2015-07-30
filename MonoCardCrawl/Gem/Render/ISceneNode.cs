@@ -5,7 +5,7 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 
-namespace Gem.Render.SceneGraph
+namespace Gem.Render
 {
     public class ISceneNode
     {
@@ -19,6 +19,7 @@ namespace Gem.Render.SceneGraph
 
         public virtual void PreDraw(float ElapsedSeconds, RenderContext Context) { }
         public virtual void Draw(RenderContext Context) { }
-        public virtual void CalculateLocalMouse(Ray MouseRay) { }
+        public virtual void CalculateLocalMouse(Ray MouseRay, Action<ISceneNode, float> HoverCallback) { }
+        public virtual void HandleMouse(bool Click) { }
     }
 }

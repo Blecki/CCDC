@@ -7,9 +7,9 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Gem;
 
-namespace MonoCardCrawl
+namespace Game
 {
-    public class EditorGrid : Gem.Render.SceneGraph.ISceneNode
+    public class EditorGrid : Gem.Render.ISceneNode
     {
         private Gem.Geo.Mesh QuadMesh = null;
         private Gem.Geo.WireframeMesh GridMesh = null;
@@ -44,7 +44,7 @@ namespace MonoCardCrawl
             return Vector3.Dot(A, B) / B.Length();
         }
 
-        public override void CalculateLocalMouse(Ray MouseRay)
+        public override void CalculateLocalMouse(Ray MouseRay, Action<Gem.Render.ISceneNode, float> HoverCallback)
         {
             MouseHover = false;
 

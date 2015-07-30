@@ -7,106 +7,26 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Gem.Render
 {
-    public class ImmediateMode2d
+    public class ImmediateMode2D
     {
-        public GraphicsDevice GraphicsDevice { get; private set; }
-
-        private Cameras.OrthographicCamera _camera = null;
-        public Cameras.OrthographicCamera Camera { get { return _camera; } set { _camera = value; stateChanges = true; } }
-        public MatrixStack MatrixStack { get; private set; }
-        public BasicEffect Effect { get; private set; }
-        public Texture2D Black { get; private set; }
-        public Texture2D White { get; private set; }
-
-        private bool stateChanges = false;
-
-        VertexPositionTexture[] VertexBuffer = new VertexPositionTexture[8];
+        GraphicsDevice Device;
+        Gem.Geo.Vertex[] VertexBuffer = new Gem.Geo.Vertex[8];
         Vector2[] TempVectors = new Vector2[8];
 
-        public ImmediateMode2d(GraphicsDevice device)
+        public ImmediateMode2D(GraphicsDevice Device)
         {
-            this.GraphicsDevice = device;
-            //Effect = new AlphaTestEffect(device);
-            Effect = new BasicEffect(device);
-            Camera = new Cameras.OrthographicCamera(device.Viewport);
-            MatrixStack = new MatrixStack();
+            this.Device = Device;
 
-            Black = new Texture2D(device, 1, 1, false, SurfaceFormat.Color);
-            Black.SetData(new Color[] { new Color(0, 0, 0, 255) });
-
-            White = new Texture2D(device, 1, 1, false, SurfaceFormat.Color);
-            White.SetData(new Color[] { new Color(255, 255, 255, 255) });
-            //Effect.ReferenceAlpha = 32;
-            Effect.TextureEnabled = true;
-        }
-
-        public void PushMatrix()
-        {
-            MatrixStack.PushMatrix(Matrix.Identity);
-        }
-
-        public void Identity()
-        {
-            MatrixStack.ReplaceTop(Matrix.Identity);
-            stateChanges = true;
-        }
-
-        public void PopMatrix()
-        {
-            MatrixStack.PopMatrix();
-            stateChanges = true;
-        }
-
-        public void Transform(Matrix t)
-        {
-            MatrixStack.ReplaceTop(t * MatrixStack.TopMatrix );//* t);
-            stateChanges = true;
-        }
-
-        public Texture2D Texture
-        {
-            get { return Effect.Texture; }
-            set { Effect.Texture = value; stateChanges = true; }
-        }
-
-        public Vector3 Color
-        {
-            get { return Effect.DiffuseColor; }
-            set { Effect.DiffuseColor = value; stateChanges = true; }
-        }
-
-        public float Alpha
-        {
-            get { return Effect.Alpha; }
-            set { Effect.Alpha = value; stateChanges = true; }
-        }
-
-        public void BeginScene(RenderTarget2D target = null, bool clear = true)
-        {
-            stateChanges = true;
-            GraphicsDevice.SetRenderTarget(target);
-            GraphicsDevice.RasterizerState = RasterizerState.CullNone;
-			GraphicsDevice.SamplerStates[0] = SamplerState.PointClamp;
-            GraphicsDevice.BlendState = BlendState.NonPremultiplied;
-            if (clear) GraphicsDevice.Clear(Microsoft.Xna.Framework.Color.Transparent);
-        }
-
-        public void Apply()
-        {
-            stateChanges = false;
-            Effect.Projection = Camera.Projection;
-            Effect.View = Camera.View;
-            Effect.World = MatrixStack.TopMatrix;
-         
-            //Effect.CurrentTechnique = Effect.Techniques[0];
-            Effect.CurrentTechnique.Passes[0].Apply();
-
+            for (int i = 0; i < VertexBuffer.Length; ++i)
+            {
+                VertexBuffer[i].Normal = Vector3.UnitZ;
+                VertexBuffer[i].Tangent = Vector3.UnitX;
+                VertexBuffer[i].BiNormal = Vector3.UnitY;
+            }
         }
 
         public void Quad(Vector2 v0, Vector2 v1, Vector2 v2, Vector2 v3, float depth = 0)
         {
-            if (stateChanges) Apply();
-
             VertexBuffer[0].Position = new Vector3(v0, depth);
             VertexBuffer[1].Position = new Vector3(v1, depth);
             VertexBuffer[2].Position = new Vector3(v2, depth);
@@ -114,16 +34,13 @@ namespace Gem.Render
             VertexBuffer[0].TextureCoordinate = new Vector2(0, 0);
             VertexBuffer[1].TextureCoordinate = new Vector2(1, 0);
             VertexBuffer[2].TextureCoordinate = new Vector2(0, 1);
-            VertexBuffer[3].TextureCoordinate = new Vector2(1, 1);
+            VertexBuffer[3].TextureCoordinate = new Vector2(1, 1);            
 
-            GraphicsDevice.DrawUserPrimitives<VertexPositionTexture>
-                (PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
+            Device.DrawUserPrimitives<Gem.Geo.Vertex>(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
         }
 
         public void Glyph(float x, float y, float w, float h, double tx, double ty, double tw, double th, float depth = 0)
         {
-            if (stateChanges) Apply();
-
             VertexBuffer[0].Position = new Vector3(x - 0.5f, y - 0.5f, depth);
             VertexBuffer[1].Position = new Vector3(x + w - 0.5f, y - 0.5f, depth);
             VertexBuffer[2].Position = new Vector3(x - 0.5f, y + h - 0.5f, depth);
@@ -133,8 +50,7 @@ namespace Gem.Render
 			VertexBuffer[2].TextureCoordinate = new Vector2((float)tx, (float)(ty + th));
 			VertexBuffer[3].TextureCoordinate = new Vector2((float)(tx + tw), (float)(ty + th));
 
-            GraphicsDevice.DrawUserPrimitives<VertexPositionTexture>
-                (PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
+            Device.DrawUserPrimitives<Gem.Geo.Vertex>(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
         }
 
         public void Quad(float x, float y, float w, float h, float depth = 0)
@@ -147,48 +63,25 @@ namespace Gem.Render
 
         public void Quad(Rectangle rect, float depth = 0)
         {
-            Quad(new Vector2(rect.X - 0.5f, rect.Y - 0.5f),
-               new Vector2(rect.X + rect.Width - 0.5f, rect.Y - 0.5f),
-               new Vector2(rect.X - 0.5f, rect.Y + rect.Height - 0.5f),
-               new Vector2(rect.X - 0.5f + rect.Width, rect.Y + rect.Height - 0.5f), depth);
+            Quad(new Vector2(rect.X, rect.Y),
+               new Vector2(rect.X + rect.Width, rect.Y),
+               new Vector2(rect.X, rect.Y + rect.Height),
+               new Vector2(rect.X + rect.Width, rect.Y + rect.Height), depth);
         }
 
         public void Quad(Vector2[] verts, Vector2[] texcoords, float z = 0.0f)
         {
-            if (stateChanges) Apply();
-
             for (int i = 0; i < 4; ++i)
             {
                 VertexBuffer[i].Position = new Vector3(verts[i], z);
                 VertexBuffer[i].TextureCoordinate = texcoords[i];
             }
 
-            GraphicsDevice.DrawUserPrimitives<VertexPositionTexture>
-                (PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
-        }
-
-        public void RawFullScreenQuad()
-        {
-            if (stateChanges) Apply();
-
-            VertexBuffer[0].Position = new Vector3(-1, -1, 0);
-            VertexBuffer[1].Position = new Vector3(-1, 1, 0);
-            VertexBuffer[3].Position = new Vector3(1, 1, 0);
-            VertexBuffer[2].Position = new Vector3(1, -1, 0);
-
-            VertexBuffer[0].TextureCoordinate = new Vector2(0, 1);
-            VertexBuffer[1].TextureCoordinate = new Vector2(0, 0);
-            VertexBuffer[3].TextureCoordinate = new Vector2(1, 0);
-            VertexBuffer[2].TextureCoordinate = new Vector2(1, 1);
-
-            GraphicsDevice.DrawUserPrimitives<VertexPositionTexture>
-                (PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
+            Device.DrawUserPrimitives<Gem.Geo.Vertex>(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
         }
 
         public void OrientedSprite(Vector2 Orientation)
         {
-            if (stateChanges) Apply();
-
             VertexBuffer[2].Position = new Vector3(Orientation.X - Orientation.Y, Orientation.X + Orientation.Y, 0.0f);
             VertexBuffer[3].Position = new Vector3(-(Orientation.X + Orientation.Y), Orientation.X - Orientation.Y, 0.0f);
             VertexBuffer[1].Position = new Vector3(Orientation.Y - Orientation.X, -(Orientation.X + Orientation.Y), 0.0f);
@@ -199,14 +92,11 @@ namespace Gem.Render
             VertexBuffer[3].TextureCoordinate = new Vector2(1, 0);
             VertexBuffer[2].TextureCoordinate = new Vector2(1, 1);
 
-            GraphicsDevice.DrawUserPrimitives<VertexPositionTexture>
-                (PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
+            Device.DrawUserPrimitives<Gem.Geo.Vertex>(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
         }
 
         public void SpriteAt(Vector2 Position, Vector2 Orientation, float Z)
         {
-            if (stateChanges) Apply();
-
             VertexBuffer[2].Position = new Vector3(Position.X + Orientation.X - Orientation.Y, Position.Y + Orientation.X + Orientation.Y, Z);
             VertexBuffer[3].Position = new Vector3(Position.X + -(Orientation.X + Orientation.Y), Position.Y + Orientation.X - Orientation.Y, Z);
             VertexBuffer[1].Position = new Vector3(Position.X + Orientation.Y - Orientation.X, Position.Y + -(Orientation.X + Orientation.Y), Z);
@@ -217,14 +107,11 @@ namespace Gem.Render
             VertexBuffer[3].TextureCoordinate = new Vector2(1, 0);
             VertexBuffer[2].TextureCoordinate = new Vector2(1, 1);
 
-            GraphicsDevice.DrawUserPrimitives<VertexPositionTexture>
-                (PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
+            Device.DrawUserPrimitives<Gem.Geo.Vertex>(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
         }
 
         public void Sprite(bool Flip)
         {
-            if (stateChanges) Apply();
-
             VertexBuffer[0].Position = new Vector3(-0.5f, -0.5f, 0);
             VertexBuffer[1].Position = new Vector3(-0.5f, 0.5f, 0);
             VertexBuffer[2].Position = new Vector3(0.5f, -0.5f, 0);
@@ -236,7 +123,6 @@ namespace Gem.Render
                 VertexBuffer[1].TextureCoordinate = new Vector2(0, 1);
                 VertexBuffer[2].TextureCoordinate = new Vector2(1, 0);
                 VertexBuffer[3].TextureCoordinate = new Vector2(1, 1);
-
             }
             else
             {
@@ -246,14 +132,11 @@ namespace Gem.Render
                 VertexBuffer[2].TextureCoordinate = new Vector2(0, 1);
             }
 
-            GraphicsDevice.DrawUserPrimitives<VertexPositionTexture>
-                (PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
+            Device.DrawUserPrimitives<Gem.Geo.Vertex>(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
         }
 
         public void Box(Vector2 Position, Vector2 Scale, float Angle, float Width)
         {
-            if (stateChanges) Apply();
-
             TempVectors[0] = new Vector2(-0.5f, -0.5f);
             TempVectors[1] = new Vector2(-0.5f, 0.5f);
             TempVectors[2] = new Vector2(0.5f, 0.5f);
@@ -263,14 +146,10 @@ namespace Gem.Render
             DrawLine(TempVectors[1], TempVectors[2], Width);
             DrawLine(TempVectors[2], TempVectors[3], Width);
             DrawLine(TempVectors[3], TempVectors[0], Width);
-        }
-
-        
+        }        
 
         public void DrawLine(Vector2 Start, Vector2 End, float Width)
         {
-            if (stateChanges) Apply();
-
             var LineNormal = Vector2.Normalize(End - Start);
             LineNormal = new Vector2(LineNormal.Y, -LineNormal.X);
             LineNormal *= Width * 0.5f;
@@ -284,8 +163,7 @@ namespace Gem.Render
             VertexBuffer[3].TextureCoordinate = new Vector2(1, 0);
             VertexBuffer[2].TextureCoordinate = new Vector2(1, 1);
 
-            GraphicsDevice.DrawUserPrimitives<VertexPositionTexture>
-                (PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
+            Device.DrawUserPrimitives<Gem.Geo.Vertex>(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
         }
     }
 }

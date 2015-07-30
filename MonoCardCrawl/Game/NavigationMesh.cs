@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Input;
 using Gem;
 
-namespace MonoCardCrawl
+namespace Game
 {
     public class NavigationMesh
 	{

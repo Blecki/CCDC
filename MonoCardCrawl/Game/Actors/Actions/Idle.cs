@@ -2,10 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Microsoft.Xna.Framework;
 
-namespace Game
+namespace Game.Actors.Actions
 {
-    public class ScriptBase
+    public class Idle : ActorAction
     {
     }
 }

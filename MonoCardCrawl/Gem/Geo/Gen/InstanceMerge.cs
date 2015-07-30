@@ -10,19 +10,25 @@ namespace Gem.Geo
     public partial class Gen
     {
         public static Mesh InstanceMerge(
-            Mesh mesh,
-            int InstanceCount,
+            IEnumerable<Mesh> Meshes,
             IEnumerable<Matrix> Transformation)
         {
             var r = new Mesh();
-            r.verticies = new Vertex[mesh.VertexCount * InstanceCount];
-            r.indicies = new short[mesh.indicies.Length * InstanceCount];
+
+            var totalVerticies = Meshes.Sum(m => m.VertexCount);
+            var totalIndicies = Meshes.Sum(m => m.indicies.Length);
+
+            r.verticies = new Vertex[totalVerticies];
+            r.indicies = new short[totalIndicies];
 
             int vertexInsertLocation = 0;
             int indexInsertLocation = 0;
-
-            foreach (var transform in Transformation)
+            
+            foreach (var instance in Meshes.Zip(Transformation, (m, t) => Tuple.Create(m,t)))
             {
+                var mesh = instance.Item1;
+                var transform = instance.Item2;
+
                 for (int i = 0; i < mesh.VertexCount; ++i)
                 {
                     r.verticies[i + vertexInsertLocation].Position = Vector3.Transform(mesh.verticies[i].Position, transform);
