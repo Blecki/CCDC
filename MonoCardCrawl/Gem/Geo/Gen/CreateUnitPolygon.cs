@@ -49,7 +49,7 @@ namespace Gem.Geo
             for (int i = 0; i < 4; ++i)
             {
                 result.verticies[i].TextureCoordinate =
-                    new Vector2(result.verticies[i].Position.X + 0.5f, result.verticies[i].Position.Y + 0.5f);
+                    new Vector2(result.verticies[i].Position.X + 0.5f, 1.0f - (result.verticies[i].Position.Y + 0.5f));
                 result.verticies[i].Normal = -Vector3.UnitZ;
             }
 

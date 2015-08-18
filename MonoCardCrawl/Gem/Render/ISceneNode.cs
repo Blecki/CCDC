@@ -20,6 +20,6 @@ namespace Gem.Render
         public virtual void PreDraw(float ElapsedSeconds, RenderContext Context) { }
         public virtual void Draw(RenderContext Context) { }
         public virtual void CalculateLocalMouse(Ray MouseRay, Action<ISceneNode, float> HoverCallback) { }
-        public virtual void HandleMouse(bool Click) { }
+        public virtual void HandleMouseHover() { }
     }
 }

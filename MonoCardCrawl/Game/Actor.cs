@@ -17,6 +17,7 @@ namespace Game
         public Gem.Euler Orientation = new Gem.Euler();
         public Vector3 MotionDelta = Vector3.Zero;
         public Gem.Render.ISceneNode Renderable = null;
+        public Gem.PropertyBag Properties;
 
         public ActorAction CurrentAction { get; private set; }
         public ActorAction NextAction { private get; set; }
@@ -25,6 +26,8 @@ namespace Game
         {
             CurrentAction = null;
             NextAction = null;
+
+            this.Properties = Properties.Clone();
         }
 
         public override SharpRuleEngine.RuleEngine GlobalRules { get { return World.GlobalRules; } }

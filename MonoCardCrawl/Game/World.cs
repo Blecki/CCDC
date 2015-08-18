@@ -33,8 +33,7 @@ namespace Game
             GlobalRules.Check<Actor, CombatCell>("can-traverse").When((a, c) => c.AnchoredActor != null).Do((a, c) => SharpRuleEngine.CheckResult.Disallow);
             GlobalRules.Check<Actor, CombatCell>("can-traverse").Do((a, c) => SharpRuleEngine.CheckResult.Allow);
 
-            GlobalRules.Check<Actor, Tile, float>("can-walk").When((a, t, f) => f > 4 || f < 1).Do((a, t, f) => SharpRuleEngine.CheckResult.Disallow);
-            GlobalRules.Check<Actor, Tile, float>("can-walk").Do((a, t, f) => SharpRuleEngine.CheckResult.Allow);
+            
             
             GlobalRules.FinalizeNewRules();
         }

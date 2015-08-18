@@ -21,13 +21,27 @@ namespace Game
         public RenderContext RenderContext { get; private set; }
         public Gem.Render.FreeCamera Camera { get; private set; }
         public World World;
-        private Gem.Render.BranchNode SceneGraph;
+        public Gem.Render.BranchNode SceneGraph { get; private set; }
         //private EditorGrid Grid;
         private CombatGridVisual CombatGridVisual;
         private Actor PlayerActor;
+        public ISceneNode HoverNode { get; private set; }
 
-        private InputState CurrentState = null;
-        public InputState NextState = null;
+        private List<InputState> InputStack = new List<InputState>();
+
+        public void PushInputState(InputState NextState)
+        {
+            if (InputStack.Count > 0) InputStack.Last().Covered(this, World);
+            InputStack.Add(NextState);
+            NextState.EnterState(this, World);
+        }
+
+        public void PopInputState()
+        {
+            InputStack.Last().LeaveState(this, World);
+            InputStack.RemoveAt(InputStack.Count - 1);
+            if (InputStack.Count > 0) InputStack.Last().Exposed(this, World);
+        }
 
         public WorldScreen()
         {
@@ -84,8 +98,35 @@ namespace Game
                 Animations = new Gem.AnimationSet(
                     new Gem.Animation("idle", 0.15f, 0),
                     new Gem.Animation("run", 0.15f, 1, 2, 3, 4, 5, 6)),
-                SpriteSheet = new Gem.SpriteSheet(4, 4)
+                SpriteSheet = new Gem.SpriteSheet(4, 4),
+                HiliteOnHover = true,
+                HoverOverlay = Content.Load<Texture2D>("outline")
             };
+
+            var commandSet = new List<Input.PlayerCommand>();
+            testActorProperties.Upsert("commands", commandSet);
+
+            var walkCommand = new Input.PlayerCommand(World);
+            walkCommand.Check("can-walk", "actor", "cell", "path");
+            walkCommand.Perform("do-walk", "actor", "path");
+            testActorProperties.Upsert("walk-command", walkCommand);
+
+            World.GlobalRules.Check<Actor, CombatCell, Pathfinding<CombatCell>.PathNode>("can-walk")
+                .When((a, c, n) => n.PathCost > a.Properties.GetPropertyAsOrDefault<int>("turn-energy") || n.PathCost < 1)
+                .Do((a, c, n) => SharpRuleEngine.CheckResult.Disallow);
+            World.GlobalRules.Check<Actor, CombatCell, Pathfinding<CombatCell>.PathNode>("can-walk")
+                .Do((a, c, n) => SharpRuleEngine.CheckResult.Allow);
+
+            World.GlobalRules.Perform<Actor, Pathfinding<CombatCell>.PathNode>("do-walk")
+                .Do((a, p) =>
+                {
+                    var energy = a.Properties.GetPropertyAs<int>("turn-energy");
+                    energy -= (int)p.PathCost;
+                    a.Properties.Upsert("turn-energy", energy);
+                    a.NextAction = new Actors.Actions.WalkPath(p.ExtractPath());
+                    PushInputState(new Input.WaitForIdle(a));
+                    return SharpRuleEngine.PerformResult.Continue;
+                });
 
             PlayerActor = World.SpawnActor(typeof(Actors.AnimatedSpriteActor),
                 testActorProperties,
@@ -111,47 +152,20 @@ namespace Game
 
             var StaticWorld = WorldModel.CreateStaticGeometryBuffers(World, Main.GraphicsDevice);
             SceneGraph.Add(StaticWorld);
+            SceneGraph.Add(new ActorSceneNode(World));
 
             World.PrepareCombatGrid();
             var hilite = Content.Load<Texture2D>("hilite");
             var footstep = Content.Load<Texture2D>("path");
-            CombatGridVisual = new CombatGridVisual(World.CombatGrid, c => CurrentState.HandleClick(this, World, c));
+            CombatGridVisual = new CombatGridVisual(World.CombatGrid);
             CombatGridVisual.HoverTexture = Content.Load<Texture2D>("swirl");
             CombatGridVisual.TextureTable = new Texture2D[] { hilite, footstep };
             SceneGraph.Add(CombatGridVisual);
-
-            var guiMesh = Gem.Geo.Gen.CreatePatch(
-                new Vector3[] {
-                    new Vector3(0,3,4), new Vector3(1,3,0), new Vector3(2,3,1), new Vector3(3,3,0),
-                    new Vector3(0,2,0), new Vector3(1,2,0), new Vector3(2,2,1), new Vector3(3,2,0),
-                    new Vector3(0,1,0), new Vector3(1,1,0), new Vector3(2,1,1), new Vector3(3,1,0),
-                    new Vector3(0,0,0), new Vector3(1,0,0), new Vector3(2,0,1), new Vector3(3,0,-2)
-                }, 4);
-            var testGUI = new Gem.Gui.GuiSceneNode(
-                guiMesh,
-                Main.GraphicsDevice, 512, 512);
-            testGUI.Orientation.Position = new Vector3(4, 4, 4);
-            SceneGraph.Add(testGUI);
-
-            testGUI.uiRoot.AddPropertySet(null, new Gem.Gui.GuiProperties { BackgroundColor = new Vector3(1, 0, 0), Transparent = false });
-            testGUI.uiRoot.AddChild(new Gem.Gui.UIItem(new Rectangle(8, 8, 256, 256), new Gem.Gui.GuiProperties
-            {
-                BackgroundColor = new Vector3(0, 0, 0),
-                Label = "HELLO WORLD",
-                TextColor = new Vector3(0, 0, 1),
-                Font = new Gem.Gui.BitmapFont(Content.Load<Texture2D>("small-font"), 6, 8, 6)
-            }));
-            testGUI.uiRoot.children[0].AddPropertySet(
-                item => item.Hover, 
-                new Gem.Gui.GuiProperties
-                {
-                    BackgroundColor = new Vector3(0, 1, 0)
-                });
             
             //guiSettings.Upsert("text-color", new Vector3(1, 1, 1));
             //guiSettings.Upsert("font", new Gem.Gui.BitmapFont(Content.Load<Texture2D>("small-font"), 6, 8, 6));
-            
-            NextState = new Input.SelectTile(PlayerActor);
+
+            PushInputState(new Input.TurnScheduler(World.Actors));
         }
 
         public void End()
@@ -160,13 +174,6 @@ namespace Game
 
         public void Update(float elapsedSeconds)
         {
-            if (NextState != null)
-            {
-                CurrentState = NextState;
-                NextState = null;
-                CurrentState.EnterState(this, World);
-            }
-
             //if (Main.Input.Check("GRID-UP")) Grid.Orientation.Position.Z += 1;
             //if (Main.Input.Check("GRID-DOWN")) Grid.Orientation.Position.Z -= 1;
 
@@ -175,14 +182,15 @@ namespace Game
             if (Main.Input.Check("UP")) Camera.Pitch(elapsedSeconds);
             if (Main.Input.Check("DOWN")) Camera.Pitch(-elapsedSeconds);
 
-            if (Main.Input.Check("CAMERA-DISTANCE-TOGGLE")) CameraDistance = -12.0f;
-            else CameraDistance = -24.0f;
+            if (Main.Input.Check("CAMERA-DISTANCE-TOGGLE")) CameraDistance = -24.0f;
+            else CameraDistance = -14.0f;
 
             Camera.Position = CameraFocus + (Camera.GetEyeVector() * CameraDistance);
 
             foreach (var actor in World.Actors)
                 actor.Update(World, elapsedSeconds);
-            if (CurrentState != null) CurrentState.Update(this, World);
+
+            HoverNode = null;
 
             var pickVector = Camera.Unproject(new Vector3(Main.Input.QueryAxis("MAIN"), 0));
             var pickRay = new Ray(Camera.Position, pickVector - Camera.Position);
@@ -194,10 +202,11 @@ namespace Game
                 var nearestDistance = float.PositiveInfinity;
                 foreach (var hoverItem in hoverItems)
                     if (hoverItem.Distance < nearestDistance) nearestDistance = hoverItem.Distance;
-                var nearestItem = hoverItems.First(item => item.Distance <= nearestDistance);
-                nearestItem.Node.HandleMouse(Main.Input.Check("CLICK"));
+                HoverNode = hoverItems.First(item => item.Distance <= nearestDistance).Node;
+                HoverNode.HandleMouseHover();
             }
-            
+
+            if (InputStack.Count > 0) InputStack.Last().Update(this, World);
         }
 
         private struct HoverItem
@@ -210,18 +219,9 @@ namespace Game
         {
             var viewport = Main.GraphicsDevice.Viewport;
 
-            foreach (var actor in World.Actors.Where(a => a.Renderable != null))
-            {
-                actor.Renderable.UpdateWorldTransform(Matrix.Identity);
-                actor.Renderable.PreDraw(elapsedSeconds, RenderContext);
-            }
-
-           
-
             SceneGraph.UpdateWorldTransform(Matrix.Identity);
             SceneGraph.PreDraw(elapsedSeconds, RenderContext);
-
-           
+                       
             Main.GraphicsDevice.SetRenderTarget(null);
             Main.GraphicsDevice.Viewport = viewport;
             Main.GraphicsDevice.BlendState = BlendState.NonPremultiplied;
@@ -231,6 +231,7 @@ namespace Game
             RenderContext.Camera = Camera;
             RenderContext.Color = Vector3.One;
             RenderContext.Alpha = 1.0f;
+            RenderContext.ClipAlpha = 0.2f;
             RenderContext.LightingEnabled = true;
             RenderContext.UVTransform = Matrix.Identity;
             RenderContext.World = Matrix.Identity;
@@ -245,8 +246,7 @@ namespace Game
             Main.GraphicsDevice.Clear(ClearOptions.Target, Color.CornflowerBlue, 0xFFFFFF, 0);
             SceneGraph.Draw(RenderContext);
             RenderContext.LightingEnabled = true;
-            foreach (var actor in World.Actors.Where(a => a.Renderable != null))
-                actor.Renderable.Draw(RenderContext);
+            
 
             RenderContext.World = Matrix.Identity;
             RenderContext.Texture = RenderContext.White;

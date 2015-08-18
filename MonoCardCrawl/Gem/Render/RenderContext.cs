@@ -11,7 +11,7 @@ namespace Gem.Render
     public class RenderContext
     {
 		private Effect Effect;
-        private GraphicsDevice Device;
+        public GraphicsDevice Device { get; private set; }
         public Gem.Render.ICamera Camera;
         public bool LightingEnabled = true;
 
@@ -113,13 +113,8 @@ namespace Gem.Render
             }
         }
 
-        public float Alpha
-        {
-            set
-            {
-                Effect.Parameters["Alpha"].SetValue(value);
-            }
-        }
+        public float Alpha { set { Effect.Parameters["Alpha"].SetValue(value); } }
+        public float ClipAlpha { set { Effect.Parameters["ClipAlpha"].SetValue(value); } }
 
         public void Draw(Geo.IMesh Mesh)
         {

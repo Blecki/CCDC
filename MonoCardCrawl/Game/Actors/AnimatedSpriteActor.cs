@@ -20,6 +20,9 @@ namespace Game.Actors
             get { return GetPropertyAs<Gem.SpriteSheet>("sprite-sheet"); }
             set { Upsert("sprite-sheet", value); }
         }
+
+        public Texture2D HoverOverlay { set { Upsert("hover-overlay", value); } }
+        public bool HiliteOnHover { set { Upsert("hilite-on-hover", value); } }
     }
 
     public class AnimatedSpriteActor : QuadActor
@@ -50,6 +53,9 @@ namespace Game.Actors
                 return SharpRuleEngine.PerformResult.Continue; 
             });
             Perform<Actor>("enter-idle").Do((actor) => { PlayAnimation("idle"); return SharpRuleEngine.PerformResult.Continue; });
+
+            MeshNode.HoverOverlay = Properties.GetPropertyAs<Texture2D>("hover-overlay", () => null);
+            MeshNode.HiliteOnHover = Properties.GetPropertyAs<bool>("hilite-on-hover", () => false);
         }
 
         public void PlayAnimation(String Name)
@@ -71,7 +77,7 @@ namespace Game.Actors
                 FacingDirection = Facing.Left;
 
             if (CurrentAnimation != null && AnimationTimer.GetFrame() < CurrentAnimation.Frames.Count)
-                MeshNode.UVTransform = SpriteSheet.GetFrameTransform(CurrentAnimation.Frames[AnimationTimer.GetFrame()], FacingDirection == Facing.Right);
+                MeshNode.UVTransform = SpriteSheet.GetFrameTransform(CurrentAnimation.Frames[AnimationTimer.GetFrame()], FacingDirection == Facing.Left);
         }
     }
 }

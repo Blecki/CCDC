@@ -119,6 +119,7 @@ namespace Game
                         c.Visible = false;
                         c.Texture = 0;
                         c.AnchoredActor = null;
+                        c.ClickAction = null;
                     }
                 });
         }

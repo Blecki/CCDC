@@ -13,8 +13,10 @@ namespace Game
     public class InputState
     {
         public virtual void EnterState(WorldScreen Game, World World) { }
-        public virtual void HandleClick(WorldScreen Game, World World, CombatCell Cell) { }
+        public virtual void Covered(WorldScreen Game, World World) { }
         public virtual void Update(WorldScreen Game, World World) { }
+        public virtual void Exposed(WorldScreen Game, World World) { }
+        public virtual void LeaveState(WorldScreen Game, World World) { }
 
     }
 }

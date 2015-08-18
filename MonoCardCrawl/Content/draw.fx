@@ -6,6 +6,7 @@ float4x4 WorldInverseTranspose;
 
 float4 DiffuseColor;
 float Alpha;
+float ClipAlpha;
 
 float3 LightPosition[16];
 float LightFalloff[16];
@@ -19,9 +20,9 @@ float4x4 UVTransform;
 sampler normalMapSampler = sampler_state
 {
 	Texture = (NormalMap);
-	MAGFILTER = POINT;
-	MINFILTER = POINT;
-	MIPFILTER = POINT;
+	MAGFILTER = LINEAR;
+	MINFILTER = LINEAR;
+	MIPFILTER = LINEAR;
 	AddressU = Wrap;
 	AddressV = Wrap;
 };
@@ -29,9 +30,9 @@ sampler normalMapSampler = sampler_state
 sampler diffuseSampler = sampler_state
 {
     Texture = (Texture);
-    MAGFILTER = POINT;
-    MINFILTER = POINT;
-    MIPFILTER = POINT;
+    MAGFILTER = LINEAR;
+    MINFILTER = LINEAR;
+    MIPFILTER = LINEAR;
     AddressU = Wrap;
     AddressV = Wrap;
 };
@@ -105,8 +106,9 @@ PixelShaderOutput PSTexturedColor(TexturedVertexShaderOutput input) : COLOR0
 	}
 
 	output.Color.a = texColor.a * Alpha;
-	clip(texColor.a < 0.1f ? -1:1);
+	clip(texColor.a < ClipAlpha ? -1:1);
 
+	//Posterize the final output for that low-color effect.
 	output.Color.r = floor(output.Color.r * 16) / 16;
 	output.Color.g = floor(output.Color.g * 16) / 16;
 	output.Color.b = floor(output.Color.b * 16) / 16;
@@ -133,10 +135,6 @@ technique DrawTextured
 		BlendOp = Add;
 		SrcBlend = One;
 		DestBlend = InvSrcAlpha;
-		//////ZEnable = false;
-		//////ZWriteEnable = true;
-		//////ZFunc = LessEqual;
-		//CullMode = None;
 		
         VertexShader = compile vs_4_0 TexturedVertexShaderFunction();
         PixelShader = compile ps_4_0 PSTexturedColor();

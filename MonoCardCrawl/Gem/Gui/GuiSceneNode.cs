@@ -10,7 +10,7 @@ using Gem.Gui;
 
 namespace Gem.Gui
 {
-    public class GuiSceneNode : Render.ISceneNode
+    public class GuiSceneNode : Render.ISceneNode, Game.IInteractive
     {
         internal Render.OrthographicCamera uiCamera = null;
         public UIItem uiRoot = null;
@@ -21,6 +21,11 @@ namespace Gem.Gui
         internal int LocalMouseX = 0;
         internal int LocalMouseY = 0;
         internal UIItem HoverItem = null;
+        
+        public Vector2 LayoutScaling = Vector2.One;
+
+        public float DistanceBias = 0.0f;
+        public bool RenderOnTop = false;
 
         GraphicsDevice Device;
 
@@ -33,7 +38,7 @@ namespace Gem.Gui
             if (this.Orientation == null) this.Orientation = new Euler();
 
             uiCamera = new Render.OrthographicCamera(new Viewport(0, 0, width, height));
-            uiRoot = new UIItem(new Rectangle(0, 0, width, height), null);
+            uiRoot = new UIItem(new QuadShape(0, 0, width, height), null);
 
             uiCamera.focus = new Vector2(width / 2, height / 2);
 
@@ -59,14 +64,22 @@ namespace Gem.Gui
             var intersection = Mesh.RayIntersection(localMouse);
             if (intersection.Intersects)
             {
-                LocalMouseX = (int)System.Math.Round(intersection.UV.X * uiCamera.Viewport.Width);
-                LocalMouseY = (int)System.Math.Round(intersection.UV.Y * uiCamera.Viewport.Height);
+                LocalMouseX = (int)System.Math.Round(intersection.UV.X * (uiCamera.Viewport.Width / LayoutScaling.X));
+                LocalMouseY = (int)System.Math.Round(intersection.UV.Y * (uiCamera.Viewport.Height / LayoutScaling.Y));
                 HoverItem = uiRoot.FindHoverItem(LocalMouseX, LocalMouseY);
-                if (HoverItem != null) HoverCallback(this, intersection.Distance);
+                if (HoverItem != null) HoverCallback(this, intersection.Distance + DistanceBias);
             }
         }
 
-        public override void HandleMouse(bool Click)
+        public Game.PlayerAction GetClickAction()
+        {
+            if (HoverItem != null)
+                return HoverItem.GetSetting("click-action", null) as Game.PlayerAction;
+            else
+                return null;
+        }
+
+        public override void HandleMouseHover()
         {
             if (HoverItem != null) HoverItem.Hover = true;
         }
@@ -79,7 +92,7 @@ namespace Gem.Gui
             Context.Color = Vector3.One;
             Context.Alpha = 1.0f;
             Context.LightingEnabled = false;
-            Context.World = Matrix.Identity;
+            Context.World = Matrix.CreateScale(LayoutScaling.X, LayoutScaling.Y, 1.0f);
             uiRoot.Render(Context);            
         }
 
@@ -90,8 +103,16 @@ namespace Gem.Gui
             Context.NormalMap = Context.NeutralNormals;
             Context.World = WorldTransform;
             Context.LightingEnabled = false;
+
+            if (RenderOnTop)
+                Context.Device.DepthStencilState = DepthStencilState.None;
+            else
+                Context.Device.DepthStencilState = DepthStencilState.Default;
+
             Context.ApplyChanges();
             Context.Draw(Mesh);
+
+            Context.Device.DepthStencilState = DepthStencilState.Default;
         }
     }
 }

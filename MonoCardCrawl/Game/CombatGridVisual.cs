@@ -9,20 +9,18 @@ using Gem;
 
 namespace Game
 {
-    public class CombatGridVisual : Gem.Render.ISceneNode
+    public class CombatGridVisual : Gem.Render.ISceneNode, IInteractive
     {
         internal bool MouseHover = false;
         internal CombatCell CellUnderMouse = null;
         internal CombatGrid Grid;
-        private Action<CombatCell> ClickCallback;
 
         public Texture2D HoverTexture;
         public Texture2D[] TextureTable;
 
-        public CombatGridVisual(CombatGrid Grid, Action<CombatCell> ClickCallback, Euler Euler = null)
+        public CombatGridVisual(CombatGrid Grid, Euler Euler = null)
         {
             this.Grid = Grid;
-            this.ClickCallback = ClickCallback;
             this.Orientation = Euler;
             if (this.Orientation == null) this.Orientation = new Euler();
         }
@@ -41,10 +39,15 @@ namespace Game
             }
         }
 
-        public override void HandleMouse(bool Click)
+        public override void HandleMouseHover()
         {
             MouseHover = true;
-            if (Click) ClickCallback(CellUnderMouse);
+        }
+
+        public PlayerAction GetClickAction()
+        {
+            if (CellUnderMouse != null) return CellUnderMouse.ClickAction;
+            return null;
         }
 
         public override void Draw(Gem.Render.RenderContext Context)

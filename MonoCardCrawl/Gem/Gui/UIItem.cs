@@ -19,7 +19,7 @@ namespace Gem.Gui
 
     public class UIItem
     {
-        public Rectangle rect;
+        public Shape Shape;
         public List<UIItem> children = new List<UIItem>();
         public UIItem parent;
         public bool Visible = true;
@@ -34,10 +34,10 @@ namespace Gem.Gui
 			}
 		}
 
-        public UIItem(Rectangle rect, PropertyBag settings)
+        public UIItem(Shape Shape, PropertyBag settings)
         {
 			if (settings != null) Properties.Add(new UIItemProperties(null, settings));
-            this.rect = rect;
+            this.Shape = Shape;
             Hover = false;
         }
 
@@ -57,7 +57,7 @@ namespace Gem.Gui
             }
 
             if ((GetSetting("transparent", false) as bool?).Value) return null;
-            if (rect.Contains(x, y)) return this;
+            if (Shape.PointInside(new Vector2(x, y))) return this;
             return null;
         }
 
@@ -119,7 +119,20 @@ namespace Gem.Gui
                 {
                     Context.Texture = Context.White;
                     Context.Color = (GetSetting("bg-color", Vector3.One) as Vector3?).Value;
-                    Context.ImmediateMode.Quad(rect);
+
+                    var bgImage = GetSetting("image", null) as Microsoft.Xna.Framework.Graphics.Texture2D;
+                    if (bgImage != null)
+                    {
+                        Context.UVTransform = (GetSetting("image-transform", Matrix.Identity) as Matrix?).Value;
+                        Context.Texture = bgImage;
+                        Shape.Render(Context);
+                    }
+                    else
+                    {
+                        Shape.Render(Context);
+                    }
+
+                    Context.UVTransform = Matrix.Identity;
                 }
 
                 var label = GetSetting("label", null) as String;
@@ -129,7 +142,9 @@ namespace Gem.Gui
                     if (font != null)
                     {
                         Context.Color = (GetSetting("text-color", Vector3.Zero) as Vector3?).Value;
-                        BitmapFont.RenderText(label, rect.X, rect.Y, float.PositiveInfinity, 2.0f, Context, font);
+                        var textOrigin = (GetSetting("text-origin", Vector2.Zero) as Vector2?).Value;
+                        BitmapFont.RenderText(label, textOrigin.X, textOrigin.Y, float.PositiveInfinity, 
+                            (GetSetting("font-scale", 2.0f) as float?).Value, Context, font);
                     }
                 }
 

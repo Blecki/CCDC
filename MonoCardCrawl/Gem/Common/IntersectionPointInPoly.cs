@@ -21,12 +21,12 @@ namespace Gem.Math
 			return true;
 		}
 
-		public static bool PointInPolygonAngle(List<Vector2> polygon, Vector2 point)
+		public static bool PointInPolygonAngle(Vector2[] polygon, Vector2 point)
 		{
 			double angle = 0;
 
 			// Iterate through polygon's edges
-			for (int i = 0; i < polygon.Count; i++)
+			for (int i = 0; i < polygon.Length; i++)
 			{
 				/*
 				p1.h = polygon[i].h - p.h;
@@ -36,7 +36,7 @@ namespace Gem.Math
 				*/
 				// Get points
 				Vector2 p1 = polygon[i] - point;
-				Vector2 p2 = polygon[i == polygon.Count - 1 ? 0 : i + 1] - point;
+				Vector2 p2 = polygon[i == polygon.Length - 1 ? 0 : i + 1] - point;
 
 				angle += Math.Vector.AngleBetweenVectors(p1, p2);
 			}

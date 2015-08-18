@@ -27,7 +27,9 @@ namespace Game.Input
         public override void Update(WorldScreen Game, World World)
         {
             if (BoundActor.CurrentAction is Actors.Actions.Idle)
-                Game.NextState = new SelectTile(BoundActor);
+            {
+                Game.PopInputState();
+            }
         }
     }
 }

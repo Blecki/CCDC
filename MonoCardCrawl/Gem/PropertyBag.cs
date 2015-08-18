@@ -19,6 +19,12 @@ namespace Gem
             else throw new InvalidOperationException();
         }
 
+        public Object GetPropertyOrDefault(String Name)
+        {
+            if (HasProperty(Name)) return Properties[Name];
+            else return null;
+        }
+
         public bool TryGetProperty(String Name, out Object Value)
         {
             if (HasProperty(Name))
@@ -29,6 +35,20 @@ namespace Gem
             else
             {
                 Value = null;
+                return false;
+            }
+        }
+
+        public bool TryGetPropertyAs<T>(String Name, out T Value)
+        {
+            if (HasProperty(Name) && Properties[Name] is T)
+            {
+                Value = (T)Properties[Name];
+                return true;
+            }
+            else
+            {
+                Value = default(T);
                 return false;
             }
         }
@@ -47,6 +67,12 @@ namespace Gem
                 Upsert(Name, Default());
                 return (T)Properties[Name];
             }
+        }
+
+        public T GetPropertyAsOrDefault<T>(String Name)
+        {
+            if (HasProperty(Name) && Properties[Name] is T) return (T)Properties[Name];
+            else return default(T);
         }
 
         public PropertyBag Clone()

@@ -150,14 +150,14 @@ namespace Gem
                     nextGame = null;
                 }
 
-                try
+                //try
                 {
                     Input.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
                     if (activeGame != null) activeGame.Update((float)gameTime.ElapsedGameTime.TotalSeconds);
                 }
-                catch (Exception e)
+                //catch (Exception e)
                 {
-                    ReportException(e);
+                //    ReportException(e);
                 }
             }
             else

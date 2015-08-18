@@ -62,6 +62,7 @@ namespace Game
         public Coordinate Coordinate;
         public Vector3 CenterPoint;
         public Actor AnchoredActor;
+        public PlayerAction ClickAction;
 
         public List<Link> Links;
         public Pathfinding<CombatCell>.PathNode PathNode;

@@ -15,7 +15,13 @@ namespace Gem.Render
         public Vector3 Color = Vector3.One;
         public Texture2D Texture = null;
         public Texture2D NormalMap = null;
+        public Texture2D HoverOverlay = null;
         public Matrix UVTransform = Matrix.Identity;
+        public bool AlphaMouse = false;
+        public bool HiliteOnHover = false;
+
+        internal bool MouseHover = false;
+        internal Vector2 LocalMouse = Vector2.Zero;
 
         public NormalMapMeshNode(Mesh Mesh, Texture2D Texture, Texture2D NormalMap, Euler Orientation = null) 
         { 
@@ -33,10 +39,58 @@ namespace Gem.Render
             context.NormalMap = NormalMap;
             context.World = WorldTransform;
             context.UVTransform = UVTransform;
+            context.LightingEnabled = true;
             context.ApplyChanges();
             context.Draw(Mesh);
             context.NormalMap = context.NeutralNormals;
+
+            if (HiliteOnHover && MouseHover)
+            {
+                context.Texture = HoverOverlay;
+                context.LightingEnabled = false;
+                context.ApplyChanges();
+                context.Draw(Mesh);
+            }
+
             context.UVTransform = Matrix.Identity;
+        }
+
+        public override void CalculateLocalMouse(Ray MouseRay, Action<Gem.Render.ISceneNode, float> HoverCallback)
+        {
+            MouseHover = false;
+
+            MouseRay.Direction = Vector3.Normalize(MouseRay.Direction);
+
+            var inverseTransform = Matrix.Invert(Orientation.Transform);
+            var localMouseSource = Vector3.Transform(MouseRay.Position, inverseTransform);
+
+            var forwardPoint = MouseRay.Position + MouseRay.Direction;
+            forwardPoint = Vector3.Transform(forwardPoint, inverseTransform);
+
+            var localMouse = new Ray(localMouseSource, forwardPoint - localMouseSource);
+
+            var intersection = Mesh.RayIntersection(localMouse);
+            
+            if (intersection.Intersects)
+            {
+                LocalMouse = Vector2.Transform(intersection.UV, UVTransform);
+                if (AlphaMouse)
+                {
+                    var pixel = new Color[] { new Color(1.0f, 1.0f, 1.0f, 1.0f) };
+                    var pX = (int)System.Math.Round(LocalMouse.X * Texture.Width);
+                    var pY = (int)System.Math.Round(LocalMouse.Y * Texture.Height);
+                    Texture.GetData<Color>(0, new Rectangle(pX, pY, 1, 1), pixel, 0, 1);
+                    if (pixel[0].A > 0.01f)
+                        HoverCallback(this, intersection.Distance);
+                }
+                else
+                    HoverCallback(this, intersection.Distance);
+            }
+        }
+
+        public override void HandleMouseHover()
+        {
+            MouseHover = true;
         }
 
     }

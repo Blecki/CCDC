@@ -61,6 +61,11 @@
     <Compile Include="Game\Actors\Actions\Idle.cs" />
     <Compile Include="Game\ActorAction.cs" />
     <Compile Include="Game\Actor.cs" />
+    <Compile Include="Game\Actors\ActorSceneNode.cs" />
+    <Compile Include="Game\PlayerCommand.cs" />
+    <Compile Include="Game\Input\PlayerAction.cs" />
+    <Compile Include="Game\Input\PlayerTurn.cs" />
+    <Compile Include="Game\Input\TurnScheduler.cs" />
     <Compile Include="Game\Input\WaitForIdle.cs" />
     <Compile Include="Gem\Common\Animation.cs" />
     <Compile Include="Game\Actors\AnimatedSpriteActor.cs" />
@@ -86,7 +91,6 @@
     <Compile Include="Game\CellGrid.cs" />
     <Compile Include="Game\NavigationMesh.cs" />
     <Compile Include="Game\InputState.cs" />
-    <Compile Include="Game\Input\SelectTile.cs" />
     <Compile Include="Gem\Common\Euler.cs" />
     <Compile Include="Gem\Common\MultiDictionary.cs" />
     <Compile Include="Gem\Common\Console\ConsoleDisplay.cs" />
@@ -161,6 +165,7 @@
     <Compile Include="Gem\Program.cs" />
     <Compile Include="Gem\Render\RenderContext.cs" />
     <Compile Include="Gem\Render\CompiledMeshNode.cs" />
+    <Compile Include="Gem\Gui\Shape.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Gem\Render\FreeCamera.cs" />
     <Compile Include="Gem\Render\OrbitCamera.cs" />

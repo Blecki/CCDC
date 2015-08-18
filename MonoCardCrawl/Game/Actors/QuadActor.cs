@@ -53,7 +53,7 @@ namespace Game.Actors
             var branch = new Gem.Render.BranchNode();
 
             var Mesh = Gem.Geo.Gen.CreateQuad();
-            Gem.Geo.Gen.Transform(Mesh, Matrix.CreateRotationZ((float)Math.PI));
+            //Gem.Geo.Gen.Transform(Mesh, Matrix.CreateRotationZ((float)Math.PI));
             Gem.Geo.Gen.Transform(Mesh, Matrix.CreateTranslation(0, 0.5f, 0));
             Gem.Geo.Gen.Transform(Mesh, Matrix.CreateScale(Properties.GetPropertyAs<float>("width"), Properties.GetPropertyAs<float>("height"), 1));
             Gem.Geo.Gen.Transform(Mesh, Matrix.CreateRotationX((float)(Math.PI / 8) * 3));
@@ -71,6 +71,8 @@ namespace Game.Actors
             branch.Add(MeshNode);
 
             Renderable = branch;
+
+            MeshNode.AlphaMouse = true;
         }
 
         public override void Update(World World, float ElapsedSeconds)
