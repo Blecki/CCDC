@@ -38,7 +38,7 @@ namespace Gem.Gui
             if (this.Orientation == null) this.Orientation = new Euler();
 
             uiCamera = new Render.OrthographicCamera(new Viewport(0, 0, width, height));
-            uiRoot = new UIItem(new QuadShape(0, 0, width, height), null);
+            uiRoot = new UIItem(Shape.CreateQuad(0, 0, width, height), null);
 
             uiCamera.focus = new Vector2(width / 2, height / 2);
 

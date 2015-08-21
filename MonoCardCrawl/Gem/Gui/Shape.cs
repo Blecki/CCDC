@@ -12,6 +12,16 @@ namespace Gem.Gui
         public virtual bool PointInside(Vector2 Point) { return false; }
         public virtual void Render(Gem.Render.RenderContext Context) { }
         public virtual Shape Transform(Matrix M) { return this; }
+
+        public static Shape CreateQuad(float X, float Y, float W, float H)
+        {
+            return new PolygonShape(
+                new Vector2(X, Y),
+                new Vector2(X + W, Y),
+                new Vector2(X + W, Y + H),
+                new Vector2(X, Y + H)
+            );
+        }
     }
 
     public class CompositeShape : Shape
@@ -47,33 +57,18 @@ namespace Gem.Gui
         }
     }
 
-    public class QuadShape : Shape
+    public class PolygonShape : Shape
     {
         private Vector2[] Points;
-        private Vector2[] TwizledPoints;
 
-        public QuadShape(Vector2 A, Vector2 B, Vector2 C, Vector2 D)
+        public PolygonShape(params Vector2[] Points)
         {
-            this.Points = new Vector2[] { A, B, C, D };
-            this.TwizledPoints = new Vector2[] { A, B, D, C };
+            this.Points = Points;
         }
 
-        public QuadShape(IEnumerable<Vector2> points)
+        public PolygonShape(IEnumerable<Vector2> Points)
         {
-            this.Points = points.ToArray();
-            this.TwizledPoints = new Vector2[] { Points[0], Points[1], Points[3], Points[2] };
-        }
-
-        public QuadShape(float X, float Y, float W, float H)
-        {
-            this.Points = new Vector2[] {
-                new Vector2(X,Y),
-                new Vector2(X + W, Y),
-                new Vector2(X + W, Y + H),
-                new Vector2(X, Y + H)
-            };
-
-            this.TwizledPoints = new Vector2[] { Points[0], Points[1], Points[3], Points[2] };
+            this.Points = Points.ToArray();
         }
 
         public override bool PointInside(Vector2 Point)
@@ -83,12 +78,12 @@ namespace Gem.Gui
 
         public override void Render(Render.RenderContext Context)
         {
-            Context.ImmediateMode.Quad(TwizledPoints, TwizledPoints);
+            Context.ImmediateMode.Polygon(Points, Points);
         }
 
         public override Shape Transform(Matrix M)
         {
-            return new QuadShape(Points.Select(p => Vector2.Transform(p, M)));
+            return new PolygonShape(Points.Select(p => Vector2.Transform(p, M)));
         }
     }
 }

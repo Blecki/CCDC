@@ -80,6 +80,23 @@ namespace Gem.Render
             Device.DrawUserPrimitives<Gem.Geo.Vertex>(PrimitiveType.TriangleStrip, VertexBuffer, 0, 2);
         }
 
+        public void IndexTriangle(Vector2[] verts, Vector2[] texcoords, float z, int A, int B, int C)
+        {
+            VertexBuffer[0].Position = new Vector3(verts[A], z);
+            VertexBuffer[0].TextureCoordinate = texcoords[A];
+            VertexBuffer[1].Position = new Vector3(verts[B], z);
+            VertexBuffer[1].TextureCoordinate = texcoords[B];
+            VertexBuffer[2].Position = new Vector3(verts[C], z);
+            VertexBuffer[2].TextureCoordinate = texcoords[C];
+            Device.DrawUserPrimitives<Gem.Geo.Vertex>(PrimitiveType.TriangleList, VertexBuffer, 0, 1);
+        }
+
+        public void Polygon(Vector2[] verts, Vector2[] texcoords, float z = 0.0f)
+        {
+            for (int i = 1; i < verts.Length - 1; ++i)
+                IndexTriangle(verts, texcoords, z, 0, i, i + 1);
+        }
+
         public void OrientedSprite(Vector2 Orientation)
         {
             VertexBuffer[2].Position = new Vector3(Orientation.X - Orientation.Y, Orientation.X + Orientation.Y, 0.0f);

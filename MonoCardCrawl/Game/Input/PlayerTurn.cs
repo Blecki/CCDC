@@ -24,7 +24,7 @@ namespace Game.Input
 
         private Gem.Gui.Shape MakeTopChevron(int Left, int Right, int Top, int Bottom, int Delta, bool LeftFlat, bool RightFlat)
         {
-            return new Gem.Gui.QuadShape(
+            return new Gem.Gui.PolygonShape(
                 new Vector2(Left, Top),
                 new Vector2(Right, Top),
                 RightFlat ? new Vector2(Right, Bottom) : new Vector2(Right + Delta, Bottom),
@@ -33,7 +33,7 @@ namespace Game.Input
 
         private Gem.Gui.Shape MakeBottomChevron(int Left, int Right, int Top, int Bottom, int Delta, bool LeftFlat, bool RightFlat)
         {
-            return new Gem.Gui.QuadShape(
+            return new Gem.Gui.PolygonShape(
                 LeftFlat ? new Vector2(Left, Top) : new Vector2(Left + Delta, Top),
                 RightFlat ? new Vector2(Right, Top) : new Vector2(Right + Delta, Top),
                 new Vector2(Right, Bottom),
@@ -76,7 +76,7 @@ namespace Game.Input
 
 
             var guardButton = new Gem.Gui.UIItem(
-                new Gem.Gui.QuadShape(512 - 48 - 64, 128 - 32, 64, 32),
+                Gem.Gui.Shape.CreateQuad(512 - 48 - 64, 128 - 32, 64, 32),
                 new Gem.Gui.GuiProperties
                 {
                     BackgroundColor = new Vector3(0.7f, 0.7f, 0.7f),
