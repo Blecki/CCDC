@@ -8,7 +8,7 @@ using Gem.Geo;
 
 namespace Gem.Render
 {
-    public class CompiledMeshNode : ISceneNode
+    public class CompiledMeshNode : SceneNode
     {
         public CompiledModel Mesh;
         public Vector3 Color = Vector3.One;

@@ -16,7 +16,8 @@ namespace Game
         public World World;
         public Gem.Euler Orientation = new Gem.Euler();
         public Vector3 MotionDelta = Vector3.Zero;
-        public Gem.Render.ISceneNode Renderable = null;
+        public Gem.Render.SceneNode Renderable = null;
+        public Gem.Gui.GuiSceneNode PopupGui = null;
         public Gem.PropertyBag Properties;
 
         public ActorAction CurrentAction { get; private set; }

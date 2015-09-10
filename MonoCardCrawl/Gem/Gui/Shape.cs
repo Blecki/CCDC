@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework;
 
 namespace Gem.Gui
 {
-    public abstract class Shape
+    public abstract partial class Shape
     {
         public virtual bool PointInside(Vector2 Point) { return false; }
         public virtual void Render(Gem.Render.RenderContext Context) { }

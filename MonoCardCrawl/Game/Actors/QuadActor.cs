@@ -44,7 +44,7 @@ namespace Game.Actors
     {
         protected Gem.Euler ShadowOrientation = new Gem.Euler();
         protected Gem.Render.MeshNode ShadowNode;
-        protected Gem.Render.NormalMapMeshNode MeshNode;
+        protected Gem.Render.MeshNode MeshNode;
 
         public override void Create(Gem.PropertyBag Properties)
         {
@@ -64,8 +64,9 @@ namespace Game.Actors
             shadowMesh = Gem.Geo.Gen.FacetCopy(shadowMesh);
             Gem.Geo.Gen.CalculateTangentsAndBiNormals(shadowMesh);
             
-            ShadowNode = new Gem.Render.MeshNode(shadowMesh, Properties.GetPropertyAs<Texture2D>("drop-shadow"), ShadowOrientation);
-            MeshNode = new Gem.Render.NormalMapMeshNode(Mesh, Properties.GetPropertyAs<Texture2D>("sprite"), Properties.GetPropertyAs<Texture2D>("normal-map"), Orientation);
+            ShadowNode = new Gem.Render.MeshNode(shadowMesh, Properties.GetPropertyAs<Texture2D>("drop-shadow"), null, ShadowOrientation);
+            ShadowNode.InteractWithMouse = false;
+            MeshNode = new Gem.Render.MeshNode(Mesh, Properties.GetPropertyAs<Texture2D>("sprite"), Properties.GetPropertyAs<Texture2D>("normal-map"), Orientation);
 
             branch.Add(ShadowNode);
             branch.Add(MeshNode);

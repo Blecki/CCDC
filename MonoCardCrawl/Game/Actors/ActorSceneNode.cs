@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace Game
 {
-    public class ActorSceneNode : Gem.Render.ISceneNode
+    public class ActorSceneNode : Gem.Render.SceneNode
     {
         private World World;
 
@@ -15,12 +15,15 @@ namespace Game
             this.World = World;
         }
 
-        public IEnumerable<Gem.Render.ISceneNode> Nodes
+        public IEnumerable<Gem.Render.SceneNode> Nodes
         {
             get
             {
                 foreach (var actor in World.Actors)
+                {
                     if (actor.Renderable != null) yield return actor.Renderable;
+                    if (actor.PopupGui != null) yield return actor.PopupGui;
+                }
             }
         }
 
@@ -39,7 +42,7 @@ namespace Game
             foreach (var node in Nodes) node.Draw(Context);
         }
 
-        public override void CalculateLocalMouse(Microsoft.Xna.Framework.Ray MouseRay, Action<Gem.Render.ISceneNode, float> HoverCallback)
+        public override void CalculateLocalMouse(Microsoft.Xna.Framework.Ray MouseRay, Action<Gem.Render.SceneNode, float> HoverCallback)
         {
             foreach (var node in Nodes) node.CalculateLocalMouse(MouseRay, HoverCallback);
         }

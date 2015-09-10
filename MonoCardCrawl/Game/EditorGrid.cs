@@ -9,7 +9,7 @@ using Gem;
 
 namespace Game
 {
-    public class EditorGrid : Gem.Render.ISceneNode
+    public class EditorGrid : Gem.Render.SceneNode
     {
         private Gem.Geo.Mesh QuadMesh = null;
         private Gem.Geo.WireframeMesh GridMesh = null;
@@ -44,7 +44,7 @@ namespace Game
             return Vector3.Dot(A, B) / B.Length();
         }
 
-        public override void CalculateLocalMouse(Ray MouseRay, Action<Gem.Render.ISceneNode, float> HoverCallback)
+        public override void CalculateLocalMouse(Ray MouseRay, Action<Gem.Render.SceneNode, float> HoverCallback)
         {
             MouseHover = false;
 

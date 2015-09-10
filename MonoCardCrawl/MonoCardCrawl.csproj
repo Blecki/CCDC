@@ -63,7 +63,6 @@
     <Compile Include="Game\Actor.cs" />
     <Compile Include="Game\Actors\ActorSceneNode.cs" />
     <Compile Include="Game\PlayerCommand.cs" />
-    <Compile Include="Game\Input\PlayerAction.cs" />
     <Compile Include="Game\Input\PlayerTurn.cs" />
     <Compile Include="Game\Input\TurnScheduler.cs" />
     <Compile Include="Game\Input\WaitForIdle.cs" />
@@ -80,6 +79,7 @@
     <Compile Include="Gem\Common\AnimationTimer.cs" />
     <Compile Include="Gem\Gui\GuiProperties.cs" />
     <Compile Include="Gem\Gui\GuiRenderStack.cs" />
+    <Compile Include="Gem\Gui\Shape-CreateWedge.cs" />
     <Compile Include="Gem\Render\NormalMapMeshNode.cs" />
     <Compile Include="Gem\PropertyBag.cs" />
     <Compile Include="Game\Tiles\RampTile.cs" />
@@ -176,8 +176,7 @@
     <Compile Include="Gem\Render\ImmediateModeDebug.cs" />
     <Compile Include="Gem\Gui\MatrixStack.cs" />
     <Compile Include="Gem\Render\BranchNode.cs" />
-    <Compile Include="Gem\Render\ISceneNode.cs" />
-    <Compile Include="Gem\Render\MeshNode.cs" />
+    <Compile Include="Gem\Render\SceneNode.cs" />
     <Compile Include="Game\World.cs" />
   </ItemGroup>
   <ItemGroup>

@@ -15,7 +15,8 @@ namespace Gem.Gui
         public bool Transparent { set { Upsert("transparent", value); } }
         public String Label { set { Upsert("label", value); } }
         public Vector2 TextOrigin { set { Upsert("text-origin", value); } }
-        public Game.PlayerAction ClickAction { set { Upsert("click-action", value); } }
+        public Action ClickAction { set { Upsert("click-action", value); } }
+        public Action HoverAction { set { Upsert("hover-action", value); } }
         public Microsoft.Xna.Framework.Graphics.Texture2D Image { set { Upsert("image", value); } }
         public Matrix ImageTransform { set { Upsert("image-transform", value); } }
         public float FontScale { set { Upsert("font-scale", value); } }

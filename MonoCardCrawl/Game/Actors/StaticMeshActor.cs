@@ -30,6 +30,7 @@ namespace Game.Actors
             Renderable = new Gem.Render.MeshNode(
                 Properties.GetPropertyAs<Gem.Geo.Mesh>("mesh"),
                 Properties.GetPropertyAs<Texture2D>("texture"),
+                null,
                 Orientation);
         }
     }

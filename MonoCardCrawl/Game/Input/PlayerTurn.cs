@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 
 namespace Game.Input
 {
@@ -12,8 +13,10 @@ namespace Game.Input
         private Actor BoundActor;
         private int MaxEnergy;
         private Gem.Gui.GuiSceneNode Gui;
+        private CombatGridVisual CombatGridVisual;
         private Gem.Gui.UIItem[,] EnergyBar;
-        private PlayerAction HoverAction;
+        private int PreviewCost;
+        private Actor UIPopupActor = null;
 
         private bool TurnEnded = false;
 
@@ -40,6 +43,12 @@ namespace Game.Input
                 new Vector2(Left, Bottom));
         }
 
+        private void ClearActorPopup()
+        {
+            if (UIPopupActor != null) UIPopupActor.PopupGui = null;
+            UIPopupActor = null;
+        }
+
         public override void EnterState(WorldScreen Game, World World)
         {
             //TODO: Run some kind of turn-begins rule.
@@ -48,8 +57,8 @@ namespace Game.Input
 
             BoundActor.Properties.Upsert("turn-energy", MaxEnergy);
 
-            //Prepare turn GUI
-            
+            #region Prepare GUI
+
             var guiMesh = Gem.Geo.Gen.CreatePatch(
                 new Vector3[] {
                     new Vector3(0,-2,4),     new Vector3(6,-2,2), new Vector3(10,-2,2),     new Vector3(16,-2,4),
@@ -63,7 +72,7 @@ namespace Game.Input
                 Game.Main.GraphicsDevice, 512, 256);
 
             //Gui.LayoutScaling = new Vector2(4, 4);
-            
+
             Gui.Orientation.Position = new Vector3(0, 2, 0);
 
             // Make this GUI 'always on top'
@@ -80,9 +89,9 @@ namespace Game.Input
                 new Gem.Gui.GuiProperties
                 {
                     BackgroundColor = new Vector3(0.7f, 0.7f, 0.7f),
-                    ClickAction = new LambdaPlayerAction(1, a => Guard()),
+                    ClickAction = () => Guard(),
                     Image = Game.Main.EpisodeContent.Load<Microsoft.Xna.Framework.Graphics.Texture2D>("Content/guard"),
-                    ImageTransform = Matrix.CreateTranslation(-(512-48-64), -(128-32), 0) * Matrix.CreateScale(1.0f / 64, 1.0f / 32, 1.0f)
+                    ImageTransform = Matrix.CreateTranslation(-(512 - 48 - 64), -(128 - 32), 0) * Matrix.CreateScale(1.0f / 64, 1.0f / 32, 1.0f)
                 });
             guardButton.AddPropertySet(item => item.Hover, new Gem.Gui.GuiProperties
                 {
@@ -96,10 +105,10 @@ namespace Game.Input
             var chevronRange = chevronRightEdge - chevronLeftEdge;
             var chevronSize = (int)Math.Round((float)chevronRange / (float)MaxEnergy);
 
-            EnergyBar = new Gem.Gui.UIItem[2,MaxEnergy];
+            EnergyBar = new Gem.Gui.UIItem[2, MaxEnergy];
 
             for (var chevronIndex = 0; chevronIndex < MaxEnergy; ++chevronIndex)
-            { 
+            {
                 var topShape = MakeTopChevron(
                     chevronLeftEdge,
                     chevronIndex == MaxEnergy - 1 ? chevronRightEdge : chevronLeftEdge + chevronSize,
@@ -117,7 +126,7 @@ namespace Game.Input
                     16,
                     chevronIndex == 0,
                     chevronIndex == MaxEnergy - 1);
-             
+
                 chevronLeftEdge += chevronSize;
 
                 EnergyBar[0, chevronIndex] = new Gem.Gui.UIItem(topShape, new Gem.Gui.GuiProperties
@@ -127,14 +136,55 @@ namespace Game.Input
 
                 EnergyBar[1, chevronIndex] = new Gem.Gui.UIItem(bottomShape, new Gem.Gui.GuiProperties
                     {
-                        BackgroundColor = new Vector3(0,0,0.2f)
+                        BackgroundColor = new Vector3(0, 0, 0.2f)
                     });
 
                 Gui.uiRoot.AddChild(EnergyBar[0, chevronIndex]);
                 Gui.uiRoot.AddChild(EnergyBar[1, chevronIndex]);
             }
 
+            #endregion
+
             PrepareCombatGrid(Game, World);
+
+            var hilite = Game.Main.Content.Load<Texture2D>("Content/hilite");
+            var footstep = Game.Main.Content.Load<Texture2D>("Content/path");
+            CombatGridVisual = new CombatGridVisual(World.CombatGrid);
+            CombatGridVisual.HoverTexture = Game.Main.Content.Load<Texture2D>("Content/swirl");
+            CombatGridVisual.TextureTable = new Texture2D[] { hilite, footstep };
+
+            Game.SceneGraph.Add(CombatGridVisual);
+
+            foreach (var actor in Game.World.Actors)
+            {
+                var localActor = actor;
+                if (actor.Renderable != null)
+                    actor.Renderable.ClickAction = () =>
+                        {
+                            ClearActorPopup();
+                            CreateActorPopupGui(Game, localActor);
+                        };
+            }
+        }
+
+        private void CreateActorPopupGui(WorldScreen Game, Actor Actor)
+        {
+            var guiQuad = Gem.Geo.Gen.CreateQuad();
+            Gem.Geo.Gen.Transform(guiQuad, Matrix.CreateScale(3, 3, 1));
+            Gem.Geo.Gen.Transform(guiQuad, Matrix.CreateRotationX(Gem.Math.Angle.PI / 2.0f));
+            var gui = new Gem.Gui.GuiSceneNode(guiQuad, Game.Main.GraphicsDevice, 512, 512, Actor.Orientation);
+            Actor.PopupGui = gui;
+            gui.uiRoot.AddPropertySet(null, new Gem.Gui.GuiProperties { Transparent = true });
+
+            gui.uiRoot.AddChild(new Gem.Gui.UIItem(
+                Gem.Gui.Shape.CreateWedge(new Vector2(256, 256), 1.9f, 4.1f, 128, 256, 6),
+                new Gem.Gui.GuiProperties
+                {
+                    BackgroundColor = new Vector3(1, 0, 0)
+                }));
+
+
+            UIPopupActor = Actor;
         }
 
         private void Guard()
@@ -146,7 +196,7 @@ namespace Game.Input
 
         public override void Covered(WorldScreen Game, World World)
         {
-
+            ClearActorPopup();
         }
 
         public override void Update(WorldScreen Game, World World)
@@ -157,20 +207,18 @@ namespace Game.Input
                 return;
             }
 
-            if (Game.HoverNode is IInteractive)
+            if (Game.HoverNode != null)
             {
-                HoverAction = (Game.HoverNode as IInteractive).GetClickAction();
-                //if (HoverAction != null && HoverAction.Cost > EnergyLeft) HoverAction = null;
-                if (HoverAction != null && Game.Main.Input.Check("CLICK"))
-                {
-                    HoverAction.CarryOut(Gem.PropertyBag.Create(
-                        "actor", BoundActor,
-                        "game", Game,
-                        "world", World));
-                }
+                var hoverAction = Game.HoverNode.GetHoverAction();
+                if (hoverAction != null) hoverAction();
 
+                if (Game.Main.Input.Check("CLICK"))
+                {
+                    var clickAction = Game.HoverNode.GetClickAction();
+                    if (clickAction != null) clickAction();
+                }
             }
-         
+
             int turnEnergy;
             if (!BoundActor.Properties.TryGetPropertyAs("turn-energy", out turnEnergy))
                 turnEnergy = MaxEnergy;
@@ -182,11 +230,9 @@ namespace Game.Input
             for (int i = energySpent; i < MaxEnergy; ++i)
                 EnergyBar[0, i].Properties[0].Values.Upsert("bg-color", new Vector3(0.7f, 0, 0));
 
-            if (HoverAction != null && energySpent + HoverAction.Cost <= MaxEnergy)
-                for (int i = energySpent; i < energySpent + HoverAction.Cost; ++i)
+            if (energySpent + PreviewCost <= MaxEnergy)
+                for (int i = energySpent; i < energySpent + PreviewCost; ++i)
                     EnergyBar[0, i].Properties[0].Values.Upsert("bg-color", new Vector3(1, 0, 0));
-
-
         }
 
         public override void Exposed(WorldScreen Game, World World)
@@ -200,7 +246,9 @@ namespace Game.Input
 
         public override void LeaveState(WorldScreen Game, World World)
         {
+            ClearActorPopup();
             Game.SceneGraph.Remove(Gui);
+            Game.SceneGraph.Remove(CombatGridVisual);
         }
 
         private void PrepareCombatGrid(WorldScreen Game, World World)
@@ -231,10 +279,8 @@ namespace Game.Input
                         node.Key.Texture = 1;
                         node.Key.PathNode = node.Value;
                         var localNode = node;
-                        node.Key.ClickAction = new LambdaPlayerAction((int)node.Value.PathCost, a =>
-                        {
-                            walkCommand.ConsiderPerform(commandProperties);
-                        });
+                        node.Key.ClickAction = () => walkCommand.ConsiderPerform(commandProperties);
+                        node.Key.HoverAction = () => PreviewCost = (int)localNode.Value.PathCost;
                     }
                 }
             }

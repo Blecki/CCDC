@@ -7,7 +7,7 @@ using Microsoft.Xna.Framework.Graphics;
 
 namespace Gem.Render
 {
-    public class BranchNode : ISceneNode
+    public class BranchNode : SceneNode
     {
         public BranchNode(Euler Orientation = null)
         {
@@ -15,11 +15,11 @@ namespace Gem.Render
             if (this.Orientation == null) this.Orientation = new Euler();
         }
 
-        private List<ISceneNode> children = new List<ISceneNode>();
+        private List<SceneNode> children = new List<SceneNode>();
 
-        public void Add(ISceneNode child) { children.Add(child); }
-        public void Remove(ISceneNode child) { children.Remove(child); }
-        public IEnumerator<ISceneNode> GetEnumerator() { return children.GetEnumerator(); }
+        public void Add(SceneNode child) { children.Add(child); }
+        public void Remove(SceneNode child) { children.Remove(child); }
+        public IEnumerator<SceneNode> GetEnumerator() { return children.GetEnumerator(); }
 
         public override void UpdateWorldTransform(Matrix M)
         {
@@ -37,9 +37,35 @@ namespace Gem.Render
             foreach (var child in this) child.Draw(Context);
         }
 
-        public override void CalculateLocalMouse(Ray MouseRay, Action<ISceneNode, float> HoverCallback)
+        public override void CalculateLocalMouse(Ray MouseRay, Action<SceneNode, float> HoverCallback)
         {
             foreach (var child in this) child.CalculateLocalMouse(MouseRay, HoverCallback);
+        }
+
+        public override Action HoverAction
+        {
+            get
+            {
+                return base.HoverAction;
+            }
+            set
+            {
+                foreach (var child in this) child.HoverAction = value;
+                base.HoverAction = value;
+            }
+        }
+
+        public override Action ClickAction
+        {
+            get
+            {
+                return base.ClickAction;
+            }
+            set
+            {
+                foreach (var child in this) child.ClickAction = value;
+                base.ClickAction = value;
+            }
         }
     }
 }

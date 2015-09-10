@@ -9,7 +9,7 @@ using Gem;
 
 namespace Gem.Render
 {
-    public class NormalMapMeshNode : ISceneNode
+    public class MeshNode : SceneNode
     {
         public Mesh Mesh;
         public Vector3 Color = Vector3.One;
@@ -23,7 +23,7 @@ namespace Gem.Render
         internal bool MouseHover = false;
         internal Vector2 LocalMouse = Vector2.Zero;
 
-        public NormalMapMeshNode(Mesh Mesh, Texture2D Texture, Texture2D NormalMap, Euler Orientation = null) 
+        public MeshNode(Mesh Mesh, Texture2D Texture, Texture2D NormalMap, Euler Orientation = null) 
         { 
             this.Mesh = Mesh;
             this.Texture = Texture;
@@ -36,7 +36,7 @@ namespace Gem.Render
         {
             context.Color = Color;
             if (Texture != null) context.Texture = Texture;
-            context.NormalMap = NormalMap;
+            context.NormalMap = NormalMap == null ? context.NeutralNormals : NormalMap;
             context.World = WorldTransform;
             context.UVTransform = UVTransform;
             context.LightingEnabled = true;
@@ -55,9 +55,11 @@ namespace Gem.Render
             context.UVTransform = Matrix.Identity;
         }
 
-        public override void CalculateLocalMouse(Ray MouseRay, Action<Gem.Render.ISceneNode, float> HoverCallback)
+        public override void CalculateLocalMouse(Ray MouseRay, Action<Gem.Render.SceneNode, float> HoverCallback)
         {
             MouseHover = false;
+
+            if (InteractWithMouse == false) return;
 
             MouseRay.Direction = Vector3.Normalize(MouseRay.Direction);
 
@@ -88,9 +90,10 @@ namespace Gem.Render
             }
         }
 
-        public override void HandleMouseHover()
+        public override Action GetHoverAction()
         {
             MouseHover = true;
+            return base.GetHoverAction();
         }
 
     }

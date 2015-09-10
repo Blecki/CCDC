@@ -25,7 +25,7 @@ namespace Game
             }
         }
 
-        public static Gem.Render.ISceneNode CreateStaticGeometryBuffers(World From, GraphicsDevice Device)
+        public static Gem.Render.SceneNode CreateStaticGeometryBuffers(World From, GraphicsDevice Device)
         {
             var tilePiles = new List<List<TileInstance>>();
 

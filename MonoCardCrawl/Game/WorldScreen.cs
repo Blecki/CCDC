@@ -22,10 +22,8 @@ namespace Game
         public Gem.Render.FreeCamera Camera { get; private set; }
         public World World;
         public Gem.Render.BranchNode SceneGraph { get; private set; }
-        //private EditorGrid Grid;
-        private CombatGridVisual CombatGridVisual;
         private Actor PlayerActor;
-        public ISceneNode HoverNode { get; private set; }
+        public SceneNode HoverNode { get; private set; }
 
         private List<InputState> InputStack = new List<InputState>();
 
@@ -155,15 +153,6 @@ namespace Game
             SceneGraph.Add(new ActorSceneNode(World));
 
             World.PrepareCombatGrid();
-            var hilite = Content.Load<Texture2D>("hilite");
-            var footstep = Content.Load<Texture2D>("path");
-            CombatGridVisual = new CombatGridVisual(World.CombatGrid);
-            CombatGridVisual.HoverTexture = Content.Load<Texture2D>("swirl");
-            CombatGridVisual.TextureTable = new Texture2D[] { hilite, footstep };
-            SceneGraph.Add(CombatGridVisual);
-            
-            //guiSettings.Upsert("text-color", new Vector3(1, 1, 1));
-            //guiSettings.Upsert("font", new Gem.Gui.BitmapFont(Content.Load<Texture2D>("small-font"), 6, 8, 6));
 
             PushInputState(new Input.TurnScheduler(World.Actors));
         }
@@ -203,7 +192,6 @@ namespace Game
                 foreach (var hoverItem in hoverItems)
                     if (hoverItem.Distance < nearestDistance) nearestDistance = hoverItem.Distance;
                 HoverNode = hoverItems.First(item => item.Distance <= nearestDistance).Node;
-                HoverNode.HandleMouseHover();
             }
 
             if (InputStack.Count > 0) InputStack.Last().Update(this, World);
@@ -211,7 +199,7 @@ namespace Game
 
         private struct HoverItem
         {
-            public ISceneNode Node;
+            public SceneNode Node;
             public float Distance;
         }
 

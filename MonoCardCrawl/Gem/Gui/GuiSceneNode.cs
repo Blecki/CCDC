@@ -10,7 +10,7 @@ using Gem.Gui;
 
 namespace Gem.Gui
 {
-    public class GuiSceneNode : Render.ISceneNode, Game.IInteractive
+    public class GuiSceneNode : Render.SceneNode
     {
         internal Render.OrthographicCamera uiCamera = null;
         public UIItem uiRoot = null;
@@ -52,7 +52,7 @@ namespace Gem.Gui
             return Vector3.Dot(A, B) / B.Length();
         }
 
-        public override void CalculateLocalMouse(Ray MouseRay, Action<Gem.Render.ISceneNode, float> HoverCallback)
+        public override void CalculateLocalMouse(Ray MouseRay, Action<Gem.Render.SceneNode, float> HoverCallback)
         {
             if (HoverItem != null) HoverItem.Hover = false;
             
@@ -71,19 +71,25 @@ namespace Gem.Gui
             }
         }
 
-        public Game.PlayerAction GetClickAction()
+        public override Action GetClickAction()
         {
             if (HoverItem != null)
-                return HoverItem.GetSetting("click-action", null) as Game.PlayerAction;
+                return HoverItem.GetSetting("click-action", null) as Action;
             else
-                return null;
+                return base.GetClickAction();
         }
 
-        public override void HandleMouseHover()
+        public override Action GetHoverAction()
         {
-            if (HoverItem != null) HoverItem.Hover = true;
+            if (HoverItem != null)
+            {
+                HoverItem.Hover = true;
+                return HoverItem.GetSetting("hover-action", null) as Action;
+            }
+            else
+                return base.GetHoverAction();
         }
-
+        
         public override void PreDraw(float ElapsedSeconds, Render.RenderContext Context)
         {
             Device.SetRenderTarget(renderTarget);
